@@ -1,2 +1,2 @@
-# ByteCodable
+# BinaryCodable
 Swift Codable for binary representations.
