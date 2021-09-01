@@ -6,6 +6,8 @@ import PackageDescription
 let package = Package(
     name: "BinaryCodable",
     products: [
+        .executable(name: "Demo",
+                    targets: ["Demo"]),
         .library(
             name: "BinaryCodable",
             targets: ["BinaryCodable"]),
@@ -19,5 +21,6 @@ let package = Package(
         .testTarget(
             name: "BinaryCodableTests",
             dependencies: ["BinaryCodable"]),
+        .target(name: "Demo")
     ]
 )
