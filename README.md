@@ -2,7 +2,8 @@
 Swift Codable for binary representations.
 
 ref:
-- https://github.com/marksands/BetterCodable
-- https://github.com/jverkoey/BinaryCodable
-- https://developers.google.cn/protocol-buffers/docs/encoding
-- https://en.wikipedia.org/wiki/Variable-length_quantity
+- [repo BetterCodable](https://github.com/marksands/BetterCodable)
+- [repo BinaryCodable](https://github.com/jverkoey/BinaryCodable)
+- [protobuf encoding format](https://developers.google.cn/protocol-buffers/docs/encoding)
+- [varint](https://en.wikipedia.org/wiki/Variable-length_quantity)
+- [ZigZag](https://blog.csdn.net/weixin_43708622/article/details/111397290)
