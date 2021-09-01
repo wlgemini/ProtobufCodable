@@ -1,5 +1,5 @@
-# BinaryCodable
-Swift Codable for binary representations.
+# ProtobufCodable
+Swift Codable for protobuf.
 
 ref:
 - [repo BetterCodable](https://github.com/marksands/BetterCodable)
