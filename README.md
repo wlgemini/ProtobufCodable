@@ -1,7 +1,9 @@
-# BinaryCodable
-Swift Codable for binary representations.
+# ProtobufCodable
+Swift Codable for protobuf.
 
 ref:
-- https://github.com/marksands/BetterCodable
-- https://github.com/jverkoey/BinaryCodable
-- https://developers.google.cn/protocol-buffers/docs/encoding
+- [repo BetterCodable](https://github.com/marksands/BetterCodable)
+- [repo BinaryCodable](https://github.com/jverkoey/BinaryCodable)
+- [protobuf encoding format](https://developers.google.cn/protocol-buffers/docs/encoding)
+- [varint](https://en.wikipedia.org/wiki/Variable-length_quantity)
+- [ZigZag](https://blog.csdn.net/weixin_43708622/article/details/111397290)
