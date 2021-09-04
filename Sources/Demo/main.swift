@@ -1,35 +1,22 @@
 
+import ProtobufCodable
 
-//extension SingleValueEncodingContainer {
-//
-//    mutating func encode<T: Encodable>(fieldNumber: UInt64, value: T) throws {
-//        try self.encode(fieldNumber)
-//        try self.encode(value)
-//    }
-//}
+let a: UInt64 = 0b0000_0001 // 1
+let b: UInt64 = 0b0000_0001_0000_0001 // 2
+let c: UInt64 = 0b0000_0001_0000_0001_0000_0001 // 3
+let d: UInt64 = 0b0000_0001_0000_0001_0000_0001_0000_0001 // 4
+let e: UInt64 = 0b0000_0001_0000_0001_0000_0001_0000_0001_0000_0001 // 5
+let f: UInt64 = 0b0000_0001_0000_0001_0000_0001_0000_0001_0000_0001_0000_0001 // 6
+let g: UInt64 = 0b0000_0001_0000_0001_0000_0001_0000_0001_0000_0001_0000_0001_0000_0001 // 7
+let h: UInt64 = 0b0000_0001_0000_0001_0000_0001_0000_0001_0000_0001_0000_0001_0000_0001_0000_0001 // 8
 
-//import Foundation
-//import ProtobufCodable
-//
-//
-//
-//struct S: Codable {
-//
-//    @Key(1)
-//    var a: Int8 = 123
-//
-//    @Key(2)
-//    var b: Bool = false
-//}
-//
-//let s = S(a: 123, b: false)
-//
-//print("------------")
-//let d = try JSONEncoder().encode(s)
-//print("++++++++++++")
-//
+let aa = Varint.encode(a)
+let bb = Varint.encode(b)
+let cc = Varint.encode(c)
+let dd = Varint.encode(d)
+let ee = Varint.encode(e)
+let ff = Varint.encode(f)
+let gg = Varint.encode(g)
+let hh = Varint.encode(h)
 
-
-
-
-let a = -1 / 2
+print(hh)

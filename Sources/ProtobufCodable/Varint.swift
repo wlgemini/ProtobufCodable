@@ -2,45 +2,43 @@
 
 public struct Varint<T: UnsignedInteger> {
     
-    let capacity: Int = 0
+    let count: UInt8
     
-    let mutablePointer: UnsafeMutablePointer<UInt8> = .allocate(capacity: 0)
+    let mutablePointer: UnsafeMutablePointer<UInt8>
     
     public static func encode(_ value: T) -> Varint<T> {
         // find the Most Significant Bit Index
-        let msbIndex: Int8 = self._mostSignificantBitIndex(value)
+        let msbIndex: Int8 = value.mostSignificantBitIndex
         guard msbIndex >= 0 else {
-            return Varint()
+            let mutablePointer = UnsafeMutablePointer<UInt8>.allocate(capacity: 0)
+            mutablePointer.initialize(to: 0)
+            return Varint(count: 0, mutablePointer: mutablePointer)
         }
         
         // Most Significant Bit Count
-        let msbBitCount: UInt8 = UInt8(msbIndex + 1)
+        let msbCount: UInt8 = UInt8(msbIndex + 1)
         
         // capacity
-        let varintFlagBitCount: UInt8 = (msbBitCount / 7) + 1 // every 7 bit need a varint flag
-        let varintBitCount: UInt8 = msbBitCount + varintFlagBitCount
+        let varintFlagBitCount: UInt8 = UInt8(msbIndex / 7) + 1 // every 7 bit need a varint flag
+        let varintBitCount: UInt8 = msbCount + varintFlagBitCount
+        let varintByteCount: Int = Int(varintBitCount.bit2ByteScalar)
         
-        // alloc memory for capacity
-        let mutablePointer = UnsafeMutablePointer<UInt8>.allocate(capacity: Int(varintBitCount.bit2ByteScalar))
+        // alloc memory for varint
+        let mutablePointer = UnsafeMutablePointer<UInt8>.allocate(capacity: varintByteCount)
+        mutablePointer.initialize(repeating: 0, count: varintByteCount)
         
-        //
+        // set varint
+        var varintByteIndex: Int = 0
         var bitIndex: UInt8 = 0
-        var carryBitCount: UInt8 = 0 // 进位bits个数
-        var carryBit: UInt8 = 0 // 进位bits
-        
-        while bitIndex < msbBitCount {
-            var bit8: UInt8 = value[bitIndex]
-            let highBit1Mask: UInt8 = 0b1000_0000
-            
-            let nextCarryBitCount: UInt8 = carryBitCount + 1 // varint flag take 1 bit
-            let nextCarryBitMask: UInt8 = highBit1Mask >> nextCarryBitCount
-            var nextCarryBit: UInt8 = byte & nextCarryBitMask
-            // nextCarryBit = nextCarryBit >> (8 - nextCarryBitCount)
-            
-            valueByte = valueByte << carryBitCount
-            valueByte = valueByte | carryBit
+        while bitIndex < msbCount {
+            let bit8: UInt8 = value.getByte(bitIndex: bitIndex)
+            let flagedBit8: UInt8 = bit8 | 0b1000_0000
+            mutablePointer[varintByteIndex] = flagedBit8
+            bitIndex += 7
+            varintByteIndex += 1
         }
         
+        return Varint(count: UInt8(varintByteCount), mutablePointer: mutablePointer)
     }
     
 //    public static func decode(_ pointer: UnsafeBufferPointer<UInt8>) {
@@ -48,19 +46,34 @@ public struct Varint<T: UnsignedInteger> {
 //    }
 }
 
-
-extension Varint {
+extension Varint: CustomStringConvertible {
     
-    /// Find the Most Significant Bit Index
-    /// - Parameter value: any unsigned integer
-    /// - Returns: -1 when not find
-    static func _mostSignificantBitIndex<U: UnsignedInteger>(_ value: U) -> Int8 {
+    public var description: String {
+        var bytes: [UInt8] = []
+        var index: Int = 0
+        while index < self.count {
+            bytes.append(self.mutablePointer[index])
+        }
+        
+        let desc = """
+        
+        count: \(self.count)
+        byte: \()
+        """
+    }
+}
+
+
+extension UnsignedInteger {
+    
+    /// Find the Most Significant Bit Index, -1 when not find
+    var mostSignificantBitIndex: Int8 {
         var lb: Int8 = -1
-        var rb: Int8 = Int8(MemoryLayout<T>.size).byte2BitScalar
+        var rb: Int8 = Int8(MemoryLayout<Self>.size).byte2BitScalar
         
         while (lb + 1) < rb {
             let mid = (lb + rb) / 2
-            if (value >> mid) != 0 {
+            if (self >> mid) != 0 {
                 lb = mid
             } else {
                 rb = mid
@@ -71,25 +84,31 @@ extension Varint {
     }
 }
 
+
+
 extension BinaryInteger {
     
     @inlinable
-    var bit2ByteScalar: Self { self >> 3 }
+    var bit2ByteScalar: Self {
+        if (self & 0b0000_0111) == 0 {
+            return self >> 3 // 没有余数
+        } else {
+            return (self >> 3) + 1 // 有余数
+        }
+    }
     
     @inlinable
     var byte2BitScalar: Self { self << 3 }
     
-    /// get Byte from index
+    /// get Byte from Bit index
     /// - Parameter bitIndex: bit index
     /// - Returns: Byte
     @inlinable
-    subscript(bitIndex: UInt8) -> UInt8 {
-        assert(MemoryLayout<Self>.size.byte2BitScalar > bitIndex)
+    func getByte(bitIndex: UInt8) -> UInt8 {
+        // the biggest UInt128 take 16 byte, which within the range of 0 ~ 255 that UInt8 can represent.
+        let bitCount: UInt8 = UInt8(MemoryLayout<Self>.size.byte2BitScalar)
+        assert(bitCount > bitIndex)
         
-        let shift = bitIndex
-        let bitFullMask: Self = 0b1111_1111
-        let shiftMask = bitFullMask << shift
-        let target = self & shiftMask
-        return UInt8(target >> shift)
+        return UInt8((self >> bitIndex) & 0b1111_1111)
     }
 }
