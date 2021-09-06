@@ -6,6 +6,7 @@ extension BinaryInteger where Self: UnsignedInteger, Self: FixedWidthInteger {
     ///
     /// `SignedInteger` has a sign bit, so it's not approperate for this calculation.
     /// (same as `mostSignificantBitIndex`)
+    @inlinable
     var leadingNonZeroBitIndex: Int {
         self.bitWidth - self.leadingZeroBitCount - 1
     }

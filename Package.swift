@@ -1,4 +1,4 @@
-// swift-tools-version:5.3
+// swift-tools-version:5.4
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -6,8 +6,6 @@ import PackageDescription
 let package = Package(
     name: "ProtobufCodable",
     products: [
-        .executable(name: "Demo",
-                    targets: ["Demo"]),
         .library(
             name: "ProtobufCodable",
             targets: ["ProtobufCodable"]),
@@ -20,8 +18,6 @@ let package = Package(
             dependencies: []),
         .testTarget(
             name: "ProtobufCodableTests",
-            dependencies: ["ProtobufCodable"]),
-        .target(name: "Demo",
-                dependencies: ["ProtobufCodable"])
+            dependencies: ["ProtobufCodable"])
     ]
 )
