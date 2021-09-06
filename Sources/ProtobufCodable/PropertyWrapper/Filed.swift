@@ -1,6 +1,6 @@
 
 /// Wire Type
-enum _WireType: UInt8 {
+enum Wire: UInt8 {
     
     /// Use for: int32, int64, uint32, uint64, sint32, sint64, bool, enum
     case varint = 0
