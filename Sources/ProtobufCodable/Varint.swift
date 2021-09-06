@@ -23,9 +23,9 @@ extension Varint {
         // find the Most Significant Bit Index
         let msbIndex: Int = value.leadingNonZeroBitIndex
         guard msbIndex >= 0 else {
-            let mutablePointer = UnsafeMutablePointer<UInt8>.allocate(capacity: 0)
+            let mutablePointer = UnsafeMutablePointer<UInt8>.allocate(capacity: 1)
             mutablePointer.initialize(to: 0)
-            return Encode(value: value, varintByteCount: 0, varintPointer: mutablePointer)
+            return Encode(value: value, varintByteCount: 1, varintPointer: mutablePointer)
         }
         
         // Most Significant Bit Count
@@ -40,21 +40,21 @@ extension Varint {
         let varintPointer = UnsafeMutablePointer<UInt8>.allocate(capacity: varintByteCount)
         varintPointer.initialize(repeating: 0, count: varintByteCount)
         
-        // set varint
+        // set varint flag
         var varintByteIndex: Int = 0
         var bitIndex: UInt8 = 0
         while bitIndex < msbCount {
-            let bit8: UInt8 = value.getByte(bitIndex: bitIndex)
-            let flagedBit8: UInt8 = bit8 | 0b1000_0000
-            varintPointer[varintByteIndex] = flagedBit8
+            var bit8: UInt8 = value.byte(at: bitIndex)
+            bit8.setTrue(at: 7)
+            varintPointer[varintByteIndex] = bit8
             bitIndex += 7
             varintByteIndex += 1
         }
         
-        // last varint byte
-        let bit8: UInt8 = varintPointer[varintByteIndex - 1]
-        let flagedBit8: UInt8 = bit8 ^ 0b1000_0000
-        varintPointer[varintByteIndex - 1] = flagedBit8
+        // set last varint flag
+        var bit8: UInt8 = varintPointer[varintByteIndex - 1]
+        bit8.setFalse(at: 7)
+        varintPointer[varintByteIndex - 1] = bit8
         
         // init
         return Encode(value: value, varintByteCount: UInt8(varintByteCount), varintPointer: varintPointer)

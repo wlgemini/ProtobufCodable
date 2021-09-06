@@ -30,6 +30,7 @@ extension BinaryInteger where Self: UnsignedInteger, Self: FixedWidthInteger {
     */
 }
 
+
 extension BinaryInteger {
     
     @inlinable
@@ -43,18 +44,59 @@ extension BinaryInteger {
     
     @inlinable
     var byte2BitScalar: Self { self << 3 }
+}
+
+
+extension BinaryInteger {
     
-    /// get Byte from Bit index
-    /// - Parameter bitIndex: bit index
-    /// - Returns: Byte
+    /// get a byte from bit index
+    /// - Parameter index: bit index
+    /// - Returns: a byte
     @inlinable
-    func getByte(bitIndex: UInt8) -> UInt8 {
-        // the biggest UInt128 take 16 byte, which within the range of 0 ~ 255 that UInt8 can represent.
-        let bitCount: UInt8 = UInt8(MemoryLayout<Self>.size.byte2BitScalar)
-        assert(bitCount > bitIndex)
+    func byte(at index: UInt8) -> UInt8 {
+        assert(UInt8(self.bitWidth) > index)
         
-        return UInt8((self >> bitIndex) & 0b1111_1111)
+        return UInt8((self >> index) & 0b1111_1111)
     }
+}
+
+
+extension BinaryInteger {
+    
+    /// get bit at index
+    @inlinable
+    func bit(at index: UInt8) -> Bool {
+        // the biggest UInt128 take 128 bit, which within the range of 0 ~ 255 that UInt8 can represent.
+        assert(UInt8(self.bitWidth) > index)
+        
+        let mask: Self = 0b0000_0001 << index
+        return (self & mask) > 0 ? true : false
+    }
+    
+    /// set bit at index
+    @inlinable
+    mutating func setTrue(at index: UInt8) {
+        // the biggest UInt128 take 128 bit, which within the range of 0 ~ 255 that UInt8 can represent.
+        assert(UInt8(self.bitWidth) > index)
+        
+        let mask: Self = 0b0000_0001 << index
+        self = self | mask
+    }
+    
+    /// set bit at index
+    @inlinable
+    mutating func setFalse(at index: UInt8) {
+        // the biggest UInt128 take 128 bit, which within the range of 0 ~ 255 that UInt8 can represent.
+        assert(UInt8(self.bitWidth) > index)
+        
+        let mask: Self = 0b0000_0001 << index
+        self = self ^ mask
+    }
+}
+
+
+
+extension BinaryInteger {
     
     var binaryDescription: String {
         var binaryString: String = ""
