@@ -1,4 +1,4 @@
-
+/*
 final class ProtobufKeyedDecodingContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
 
     /// The path of coding keys taken to get to this point in decoding.
@@ -580,3 +580,4 @@ final class ProtobufKeyedDecodingContainer<Key: CodingKey>: KeyedDecodingContain
         
     }
 }
+*/

@@ -11,6 +11,98 @@ class ProtobufCodableTests: XCTestCase {
 
 extension ProtobufCodableTests {
     
+    func testBinaryInteger() {
+        // leadingNonZeroBitIndex
+        let leadingNonZeroBitIndex3: UInt16 = 0b0000_0000_0000_1000 // index = 3
+        let leadingNonZeroBitIndex7: UInt16 = 0b0000_0000_1000_1000 // index = 7
+        let leadingNonZeroBitIndex11: UInt16 = 0b0000_1000_1000_1000 // index = 11
+        XCTAssert(leadingNonZeroBitIndex3.leadingNonZeroBitIndex == 3)
+        XCTAssert(leadingNonZeroBitIndex7.leadingNonZeroBitIndex == 7)
+        XCTAssert(leadingNonZeroBitIndex11.leadingNonZeroBitIndex == 11)
+        
+        // bit2ByteScalar & byte2BitScalar
+        let bit4Scalar: UInt32 = 0b0000_0000_0000_1000
+        let bit8Scalar: UInt32 = 0b0000_0000_1111_1111
+        let bit12Scalar: UInt32 = 0b0000_1111_1111_1111
+        XCTAssert(bit4Scalar.bit2ByteScalar == (bit4Scalar / 8))
+        XCTAssert(bit8Scalar.bit2ByteScalar == (bit8Scalar / 8 + 1))
+        XCTAssert(bit12Scalar.bit2ByteScalar == (bit12Scalar / 8 + 1))
+        
+        let byte4Scalar: UInt32 = 0b0000_0000_0000_1000
+        let byte8Scalar: UInt32 = 0b0000_0000_1111_1111
+        let byte12Scalar: UInt32 = 0b0000_1111_1111_1111
+        XCTAssert(byte4Scalar.byte2BitScalar == (byte4Scalar * 8))
+        XCTAssert(byte8Scalar.byte2BitScalar == (byte8Scalar * 8))
+        XCTAssert(byte12Scalar.byte2BitScalar == (byte12Scalar * 8))
+        
+        // byte at index
+        let byte0: UInt32 = 0b1010_1010
+        let byte8: UInt32 = 0b1010_1010_0000_0000
+        let byte16: UInt32 = 0b1010_1010_0000_0000_0000_0000
+        XCTAssert(byte0.byte(at: 0) == 0b1010_1010)
+        XCTAssert(byte8.byte(at: 8) == 0b1010_1010)
+        XCTAssert(byte16.byte(at: 16) == 0b1010_1010)
+        
+        // get bit at index
+        let bitGet0: UInt32 = 0b0000_0001
+        let bitGet1: UInt32 = 0b0000_0010
+        let bitGet2: UInt32 = 0b0000_0100
+        let bitGet3: UInt32 = 0b0000_1000
+        
+        XCTAssert(bitGet0.bit(at: 0) == true)
+        XCTAssert(bitGet1.bit(at: 1) == true)
+        XCTAssert(bitGet2.bit(at: 2) == true)
+        XCTAssert(bitGet3.bit(at: 3) == true)
+
+        // set bit true at index
+        var bitSetTrue0: UInt32 = 0b0000_0000
+        var bitSetTrue3: UInt32 = 0b0000_0000
+        var bitSetTrue4: UInt32 = 0b0001_0000
+        var bitSetTrue7: UInt32 = 0b1000_0000
+        
+        bitSetTrue0.bitTrue(at: 0)
+        bitSetTrue3.bitTrue(at: 3)
+        bitSetTrue4.bitTrue(at: 4)
+        bitSetTrue7.bitTrue(at: 7)
+        
+        XCTAssert(bitSetTrue0 == 0b0000_0001)
+        XCTAssert(bitSetTrue3 == 0b0000_1000)
+        XCTAssert(bitSetTrue4 == 0b0001_0000)
+        XCTAssert(bitSetTrue7 == 0b1000_0000)
+        
+        // set bit false at index
+        var bitSetFalse0: UInt32 = 0b0000_0000
+        var bitSetFalse3: UInt32 = 0b0000_0000
+        var bitSetFalse4: UInt32 = 0b0001_0000
+        var bitSetFalse7: UInt32 = 0b1000_0000
+        
+        bitSetFalse0.bitFalse(at: 0)
+        bitSetFalse3.bitFalse(at: 3)
+        bitSetFalse4.bitFalse(at: 4)
+        bitSetFalse7.bitFalse(at: 7)
+        
+        XCTAssert(bitSetFalse0 == 0b0000_0000)
+        XCTAssert(bitSetFalse3 == 0b0000_0000)
+        XCTAssert(bitSetFalse4 == 0b0000_0000)
+        XCTAssert(bitSetFalse7 == 0b0000_0000)
+        
+        // set bit toggle at index
+        var bitToggle0: UInt32 = 0b0000_0000
+        var bitToggle3: UInt32 = 0b0000_0000
+        var bitToggle4: UInt32 = 0b0001_0000
+        var bitToggle7: UInt32 = 0b1000_0000
+        
+        bitToggle0.bitToggle(at: 0)
+        bitToggle3.bitToggle(at: 3)
+        bitToggle4.bitToggle(at: 4)
+        bitToggle7.bitToggle(at: 7)
+        
+        XCTAssert(bitToggle0 == 0b0000_0001)
+        XCTAssert(bitToggle3 == 0b0000_1000)
+        XCTAssert(bitToggle4 == 0b0000_0000)
+        XCTAssert(bitToggle7 == 0b0000_0000)
+    }
+    
     func testVarint() {
         let v0: UInt64 = 0b0000_0000 // 0
         let v1: UInt64 = 0b0000_0001 // 1

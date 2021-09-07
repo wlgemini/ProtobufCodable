@@ -45,7 +45,7 @@ extension Varint {
         var bitIndex: UInt8 = 0
         while bitIndex < msbCount {
             var bit8: UInt8 = value.byte(at: bitIndex)
-            bit8.setTrue(at: 7)
+            bit8.bitTrue(at: 7)
             varintPointer[varintByteIndex] = bit8
             bitIndex += 7
             varintByteIndex += 1
@@ -53,7 +53,7 @@ extension Varint {
         
         // set last varint flag
         var bit8: UInt8 = varintPointer[varintByteIndex - 1]
-        bit8.setFalse(at: 7)
+        bit8.bitFalse(at: 7)
         varintPointer[varintByteIndex - 1] = bit8
         
         // init

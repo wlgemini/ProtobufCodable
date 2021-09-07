@@ -23,7 +23,7 @@ enum Wire: UInt8 {
 
 struct _Key {
     let fieldNumber: UInt
-    let wireType: _WireType
+    let wireType: Wire
 }
 
 struct _PayloadSize {

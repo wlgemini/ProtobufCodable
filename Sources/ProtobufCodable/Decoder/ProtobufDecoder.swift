@@ -1,5 +1,5 @@
 
-
+/*
 class ProtobufDecoder: Decoder {
 
     var codingPath: [CodingKey] = []
@@ -18,3 +18,4 @@ class ProtobufDecoder: Decoder {
         ProtobufSingleValueDecodingContainer(codingPath: [])
     }
 }
+*/

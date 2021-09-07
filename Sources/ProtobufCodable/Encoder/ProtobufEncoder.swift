@@ -1,5 +1,5 @@
 
-
+/*
 public final class ProtobufEncoder: Encoder {
     
     /// The path of coding keys taken to get to this point in encoding.
@@ -46,3 +46,5 @@ public final class ProtobufEncoder: Encoder {
         ProtobufSingleValueEncodingContainer()
     }
 }
+
+ */

@@ -74,9 +74,9 @@ extension BinaryInteger {
         return (self & mask) > 0 ? true : false
     }
     
-    /// set bit at index
+    /// set bit true at index
     @inlinable
-    mutating func setTrue(at index: UInt8) {
+    mutating func bitTrue(at index: UInt8) {
         // the biggest UInt128 take 128 bit, which within the range of 0 ~ 255 that UInt8 can represent.
         assert(UInt8(self.bitWidth) > index)
         
@@ -84,9 +84,19 @@ extension BinaryInteger {
         self = self | mask
     }
     
-    /// set bit at index
+    /// set bit false at index
     @inlinable
-    mutating func setFalse(at index: UInt8) {
+    mutating func bitFalse(at index: UInt8) {
+        // the biggest UInt128 take 128 bit, which within the range of 0 ~ 255 that UInt8 can represent.
+        assert(UInt8(self.bitWidth) > index)
+
+        let mask: Self = ~(0b0000_0001 << index)
+        self = self & mask
+    }
+    
+    /// toggle bit at index
+    @inlinable
+    mutating func bitToggle(at index: UInt8) {
         // the biggest UInt128 take 128 bit, which within the range of 0 ~ 255 that UInt8 can represent.
         assert(UInt8(self.bitWidth) > index)
         

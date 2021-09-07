@@ -1,4 +1,4 @@
-
+/*
 struct ProtobufSingleValueDecodingContainer: SingleValueDecodingContainer {
 
     /// The path of coding keys taken to get to this point in encoding.
@@ -192,3 +192,4 @@ struct ProtobufSingleValueDecodingContainer: SingleValueDecodingContainer {
     }
 }
 
+*/
