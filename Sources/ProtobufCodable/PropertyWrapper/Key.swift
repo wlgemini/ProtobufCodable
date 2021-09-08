@@ -1,31 +1,55 @@
 
-/*
- Synthesis for Encodable, Decodable, Hashable, and Equatable use the backing storage property.
- This allows property wrapper types to determine their own serialization and equality behavior.
- For Encodable and Decodable, the name used for keyed archiving is that of the original property declaration (without the _).
- */
-@propertyWrapper
-public struct Key<T> {
+/// a Protobuf Key
+protocol KeyProtocol {
     
-    public let fieldNumber: UInt
+    var key: Key { get }
+}
+
+
+/// a Varint Key
+///
+/// Each key in the streamed message is a varint with
+/// the value `(field_number << 3) | wire_type` – in other words,
+/// the last three bits of the number store the wire type.
+struct Key {
     
-    public var wrappedValue: T
+    /// UInt32 can represent enough field number, but we will use a varint form to encode it.
+    ///
+    /// - Field numbers in the range `1` through `15` take **one byte** to encode, including the field number and the field's type.
+    /// - Field numbers in the range `16` through `2047` take **two bytes**.
+    /// - The largest field numbers is `2^29 - 1`
+    /// - The smallest field number is `1`
+    /// - Cannot use the numbers `19000` through `19999` (`FieldDescriptor::kFirstReservedNumber` through `FieldDescriptor::kLastReservedNumber`), as they are reserved for the Protocol Buffers implementation
+    ///
+    var fieldNumber: UInt32 { fatalError() }
+    var wireType: WireType { fatalError() }
     
-    public init(wrappedValue: T, _ fieldNumber: UInt) {
-        self.fieldNumber = fieldNumber
-        self.wrappedValue = wrappedValue
+    let rawValue: UnsafeMutablePointer<UInt8>
+    
+    init(rawValue: UnsafeMutablePointer<UInt8>) {
+        fatalError()
     }
 }
 
-extension Key: Decodable where T: Decodable {
-    
-}
 
-extension Key: Encodable where T: Encodable {
+/// Wire Type
+enum WireType: UInt8 {
     
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(self.fieldNumber, forKey: CodingKeys.fieldNumber)
-        try container.encode(self.wrappedValue, forKey: CodingKeys.wrappedValue)
-    }
+    /// Use for: int32, int64, uint32, uint64, sint32, sint64, bool, enum
+    case varint = 0
+    
+    /// Use for: fixed64, sfixed64, double
+    case bit64 = 1
+    
+    /// Use for: string, bytes, embedded messages, packed repeated fields
+    case lengthDelimited = 2
+    
+    /// Use for: groups (deprecated)
+    case startGroup = 3
+    
+    /// Use for: groups (deprecated)
+    case endGroup = 4
+    
+    /// Use for: fixed32, sfixed32, float
+    case bit32 = 5
 }

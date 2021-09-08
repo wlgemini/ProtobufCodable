@@ -2,7 +2,7 @@
 
 extension BinaryInteger where Self: UnsignedInteger, Self: FixedWidthInteger {
     
-    /// Find the Leading non-Zero Bit index
+    /// Find the Leading non-Zero Bit index, -1 when not find
     ///
     /// `SignedInteger` has a sign bit, so it's not approperate for this calculation.
     /// (same as `mostSignificantBitIndex`)
@@ -12,8 +12,8 @@ extension BinaryInteger where Self: UnsignedInteger, Self: FixedWidthInteger {
     }
     
     /*
-    /// Find the Most Significant Bit Index, -1 when not find
-    var mostSignificantBitIndex: Int8 {
+    /// Find the Leading non-Zero Bit index, -1 when not find
+    var leadingNonZeroBitIndex: Int8 {
         var lb: Int8 = -1
         var rb: Int8 = Int8(MemoryLayout<Self>.size).byte2BitScalar
         
