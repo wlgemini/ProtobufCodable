@@ -12,6 +12,8 @@ class ProtobufCodableTests: XCTestCase {
 extension ProtobufCodableTests {
     
     func testBinaryInteger() {
+        let a: Double = 1.1
+        
         // leadingNonZeroBitIndex
         let leadingNonZeroBitIndex3: UInt16 = 0b0000_0000_0000_1000 // index = 3
         let leadingNonZeroBitIndex7: UInt16 = 0b0000_0000_1000_1000 // index = 7
