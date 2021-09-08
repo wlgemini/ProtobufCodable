@@ -6,18 +6,12 @@ import PackageDescription
 let package = Package(
     name: "ProtobufCodable",
     products: [
-        .library(
-            name: "ProtobufCodable",
-            targets: ["ProtobufCodable"]),
+        .library(name: "BinaryUtil", targets: ["BinaryUtil"]),
+        .library(name: "ProtobufCodable", targets: ["ProtobufCodable"])
     ],
     targets: [
-        // Targets are the basic building blocks of a package. A target can define a module or a test suite.
-        // Targets can depend on other targets in this package, and on products in packages this package depends on.
-        .target(
-            name: "ProtobufCodable",
-            dependencies: []),
-        .testTarget(
-            name: "ProtobufCodableTests",
-            dependencies: ["ProtobufCodable"])
+        .target(name: "BinaryUtil", dependencies: []),
+        .target(name: "ProtobufCodable", dependencies: ["BinaryUtil"]),
+        .testTarget(name: "ProtobufCodableTests", dependencies: ["BinaryUtil", "ProtobufCodable"])
     ]
 )

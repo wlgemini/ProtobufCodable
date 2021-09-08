@@ -13,5 +13,17 @@ ref:
 - [efficient conversion of double to big endian](https://stackoverflow.com/questions/45775554/swift-4-efficient-conversion-of-double-to-big-endian)
 
 ### Remaind
-- `Int` / `UInt` use `init(littleEndian value: Int)` / `.littleEndian` to encode/decode
-- `Float` / `Double` use `init(bitPattern: UInt64)` / `.bitPattern` to encode/decode
+- `Int` / `UInt` use `init(littleEndian value: Int)` / `.littleEndian` to encode/decode.
+- `Float` / `Double` use `init(bitPattern: UInt64)` / `.bitPattern` to encode/decode. (using *IEEE 754 specification*)
+
+
+### Encode 
+-`UInt`: `UInt` > `.littleEndian` > `Varint` > `UInt8*`
+-`Int`: `Int` > `.littleEndian` > `ZigZag` > `Varint` > `UInt8*`
+-`Float/Double`: `Float/Double` > `.bitPattern` > `Varint` > `UInt8*`
+
+### Decode
+- `UInt`: `UInt8*` > `Varint` > `init(littleEndian value: UInt)` > `UInt`
+- `Int`: `UInt8*` > `Varint` > `ZigZag` > `init(littleEndian value: Int)` > `Int`
+- `Float` / `Double`: `UInt8*` > `Varint` > `init(bitPattern: UInt64)` > `Float` / `Double`
+
