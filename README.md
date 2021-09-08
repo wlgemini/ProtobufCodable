@@ -19,9 +19,9 @@ ref:
 
 
 ### Encode 
--`UInt`: `UInt` > `.littleEndian` > `Varint` > `UInt8*`
--`Int`: `Int` > `.littleEndian` > `ZigZag` > `Varint` > `UInt8*`
--`Float/Double`: `Float/Double` > `.bitPattern` > `Varint` > `UInt8*`
+- `UInt`: `UInt` > `.littleEndian` > `Varint` > `UInt8*`
+- `Int`: `Int` > `.littleEndian` > `ZigZag` > `Varint` > `UInt8*`
+- `Float/Double`: `Float/Double` > `.bitPattern` > `Varint` > `UInt8*`
 
 ### Decode
 - `UInt`: `UInt8*` > `Varint` > `init(littleEndian value: UInt)` > `UInt`
