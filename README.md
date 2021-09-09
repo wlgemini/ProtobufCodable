@@ -18,13 +18,13 @@ ref:
 - `Float` / `Double` use `init(bitPattern: UInt64)` / `.bitPattern` to encode/decode. (using *IEEE 754 specification*)
 
 
-### Encode 
+### Varint Encode 
 - `UInt`: `UInt` > `.littleEndian` > `Varint` > `UInt8*`
-- `Int`: `Int` > `.littleEndian` > `ZigZag` > `Varint` > `UInt8*`
-- `Float/Double`: `Float/Double` > `.bitPattern` > `Varint` > `UInt8*`
+- `Int`: `Int` > `ZigZag` > `UInt`
+- `Float/Double`: `Float/Double` > `.bitPattern` > `UInt`
 
-### Decode
+### Varint Decode
 - `UInt`: `UInt8*` > `Varint` > `init(littleEndian value: UInt)` > `UInt`
-- `Int`: `UInt8*` > `Varint` > `ZigZag` > `init(littleEndian value: Int)` > `Int`
-- `Float` / `Double`: `UInt8*` > `Varint` > `init(bitPattern: UInt64)` > `Float` / `Double`
+- `Int`: `UInt` > `ZigZag` > `Int`
+- `Float`:  `UInt` > `init(bitPattern: UInt)` > `Float`
 
