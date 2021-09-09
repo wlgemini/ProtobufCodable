@@ -36,12 +36,25 @@ struct Key {
 enum WireType: UInt8 {
     
     /// Use for: int32, int64, uint32, uint64, sint32, sint64, bool, enum
+    ///
+    /// The values are stored in little-endian byte order.
+    ///
     case varint = 0
     
     /// Use for: fixed64, sfixed64, double
+    ///
+    /// The values are stored in little-endian byte order.
+    ///
+    /// double and fixed64 have wire type 1, which tells the parser to expect a fixed 64-bit lump of data.
     case bit64 = 1
     
     /// Use for: string, bytes, embedded messages, packed repeated fields
+    ///
+    /// A wire type of 2 (length-delimited) means that the value is a varint encoded length followed by the specified number of bytes of data.
+    ///
+    /// [Varint Key][Varint Length][Bytes]
+    ///
+    /// `String` are encoded using `.utf8` in `little-endian` byte order. (which is `String.utf8` encoding default behaviour)
     case lengthDelimited = 2
     
     /// Use for: groups (deprecated)
@@ -51,5 +64,9 @@ enum WireType: UInt8 {
     case endGroup = 4
     
     /// Use for: fixed32, sfixed32, float
+    ///
+    /// The values are stored in little-endian byte order.
+    ///
+    /// float and fixed32 have wire type 5, which tells it to expect 32 bits.
     case bit32 = 5
 }

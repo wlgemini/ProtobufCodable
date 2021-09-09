@@ -12,9 +12,15 @@ class ProtobufCodableTests: XCTestCase {
 
 extension ProtobufCodableTests {
     
+    func testString() {
+        let str = "testing".utf8
+        for c in str {
+            print(String.init(c, radix: 16), type(of: c))
+        }
+    }
+    
     func testBinaryInteger() {
-        let s: Int32 = 123
-        s.littleEndian
+
         // leadingNonZeroBitIndex
         let leadingNonZeroBitIndex3: UInt16 = 0b0000_0000_0000_1000 // index = 3
         let leadingNonZeroBitIndex7: UInt16 = 0b0000_0000_1000_1000 // index = 7
