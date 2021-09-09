@@ -54,7 +54,10 @@ enum WireType: UInt8 {
     ///
     /// [Varint Key][Varint Length][Bytes]
     ///
-    /// `String` are encoded using `.utf8` in `little-endian` byte order. (which is `String.utf8` encoding default behaviour)
+    /// - `Bytes` using raw bytes order.
+    /// `- String` are encoded to `Bytes` using `.utf8` in `little-endian` bytes order. (which is `String.utf8` encoding default behaviour)
+    /// - `Embedded message` are encoded it's key-value pairs to `Bytes` without using `startGroup`/`endGroup` barrier.
+    ///
     case lengthDelimited = 2
     
     /// Use for: groups (deprecated)
