@@ -36,6 +36,24 @@ These defaults are type-specific:
 - For numeric types, the default value is zero.
 - For enums, the default value is the first defined enum value, which must be 0.
 - For message fields, the field is not set. Its exact value is language-dependent. See the generated code guide for details.
+- The default value for `repeated` fields is empty (generally an empty list in the appropriate language)
+
+Note that for scalar message fields, once a message is parsed there's no way of telling whether a field was explicitly set to the default value (for example whether a boolean was set to false) or just not set at all: you should bear this in mind when defining your message types. 
+For example, don't have a boolean that switches on some behaviour when set to false if you don't want that behaviour to also happen by default. 
+Also note that if a scalar message field is set to its default, the value will not be serialized on the wire.
+
+#### Enumerations
+every enum definition must contain a constant that maps to zero as its first element. This is because:
+
+- There must be a `zero` value, so that we can use `0` as **a numeric default value**.
+- The `zero` value needs to be the first element, for compatibility with the `proto2` semantics where the **first enum value is always the default**.
+
+You can define aliases by assigning the same value to different enum constants. To do this you need to set the allow_alias option to true, otherwise the protocol compiler will generate an error message when aliases are found.
+
+**Enumerator constants must be in the range of a 32-bit integer. Since enum values use varint encoding on the wire, negative values are inefficient and thus not recommended.**
+
+
+During deserialization, unrecognized enum values will be preserved in the message, though how this is represented when the message is deserialized is language-dependent. In languages that support open enum types with values outside the range of specified symbols, such as C++ and Go, the unknown enum value is simply stored as its underlying integer representation. In languages with closed enum types such as Java, a case in the enum is used to represent an unrecognized value, and the underlying integer can be accessed with special accessors. In either case, if the message is serialized the unrecognized value will still be serialized with the message.
 
 
 #### Optional And Repeated Elements
