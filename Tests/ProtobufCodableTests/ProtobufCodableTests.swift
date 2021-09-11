@@ -12,10 +12,15 @@ class ProtobufCodableTests: XCTestCase {
 
 extension ProtobufCodableTests {
     
-    func testString() {
-        let str = "testing".utf8
-        for c in str {
-            print(String.init(c, radix: 16), type(of: c))
+    func testKeys() {
+        var s = S()
+        s.a = 1
+        s.b = false
+        do {
+            let d = try JSONEncoder().encode(s)
+            let ss = try JSONDecoder().decode(S.self, from: d)
+        } catch {
+            print(error)
         }
     }
     
