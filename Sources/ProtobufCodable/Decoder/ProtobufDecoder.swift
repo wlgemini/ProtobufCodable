@@ -1,21 +1,17 @@
+import Foundation
 
-/*
-class ProtobufDecoder: Decoder {
 
-    var codingPath: [CodingKey] = []
+final class ProtobufDecoder {
 
-    var userInfo: [CodingUserInfoKey : Any] = [:]
-
-    func container<Key>(keyedBy type: Key.Type) throws -> KeyedDecodingContainer<Key> where Key : CodingKey {
-        KeyedDecodingContainer<Key>(ProtobufKeyedDecodingContainer())
+    init() {}
+    
+    func decode<T>(_ type: T.Type, from data: Data) throws -> T
+    where T : ProtobufDecodable {
+        let container = ProtobufDecodingContainer(data: data)
+        let instance = try T(from: container)
+        self._container = container
+        return instance
     }
-
-    func unkeyedContainer() throws -> UnkeyedDecodingContainer {
-        ProtobufUnkeyedDecodingContainer(codingPath: [], count: nil, isAtEnd: false, currentIndex: 0)
-    }
-
-    func singleValueContainer() throws -> SingleValueDecodingContainer {
-        ProtobufSingleValueDecodingContainer(codingPath: [])
-    }
+    
+    private var _container: ProtobufDecodingContainer?
 }
-*/
