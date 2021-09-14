@@ -6,12 +6,10 @@ import PackageDescription
 let package = Package(
     name: "ProtobufCodable",
     products: [
-        .library(name: "BinaryUtil", targets: ["BinaryUtil"]),
         .library(name: "ProtobufCodable", targets: ["ProtobufCodable"])
     ],
     targets: [
-        .target(name: "BinaryUtil", dependencies: []),
-        .target(name: "ProtobufCodable", dependencies: ["BinaryUtil"]),
-        .testTarget(name: "ProtobufCodableTests", dependencies: ["BinaryUtil", "ProtobufCodable"])
+        .target(name: "ProtobufCodable", dependencies: []),
+        .testTarget(name: "ProtobufCodableTests", dependencies: ["ProtobufCodable"])
     ]
 )

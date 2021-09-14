@@ -1,0 +1,2 @@
+
+typealias Byte = UInt8
