@@ -14,12 +14,12 @@ extension _Varint {
         }
         
         // Leading Non-zero Bit Count
-        let lnbCount: Byte = Byte(truncatingIfNeeded: lnbIndex + 1)
+        let lnbCount: Int = lnbIndex + 1
         
         // capacity
-        let varintFlagBitCount: Byte = Byte(lnbIndex / 7) + 1 // every 7 bit need a varint flag
-        let varintBitCount: Byte = lnbCount + varintFlagBitCount
-        let varintByteCount: Int = Int(varintBitCount.bit2ByteScalar)
+        let varintFlagBitCount: Int = (lnbIndex / 7) + 1 // every 7 bit need a varint flag
+        let varintBitCount: Int = lnbCount + varintFlagBitCount
+        let varintByteCount: Int = varintBitCount.bit2ByteScalar
         
         // alloc memory for varint
         let varintPointer = UnsafeMutableBufferPointer<Byte>.allocate(capacity: varintByteCount)
@@ -27,7 +27,7 @@ extension _Varint {
         
         // set varint flag
         var varintByteIndex: Int = 0
-        var bitIndex: Byte = 0
+        var bitIndex: Int = 0
         while bitIndex < lnbCount {
             var bit8: Byte = value.byte(at: bitIndex)
             bit8.bitTrue(at: 7)

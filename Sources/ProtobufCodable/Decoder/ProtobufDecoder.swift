@@ -1,17 +1,14 @@
 import Foundation
 
 
-final class ProtobufDecoder {
+public final class ProtobufDecoder {
 
-    init() {}
+    public init() {}
     
-    func decode<T>(_ type: T.Type, from data: Data) throws -> T
+    public func decode<T>(_ type: T.Type, from data: Data) throws -> T
     where T : ProtobufDecodable {
-        let container = ProtobufDecodingContainer(data: data)
-        let instance = try T(from: container)
-        self._container = container
-        return instance
+        let container = _ProtobufDecodingContainer(data: data)
+        let value = try T._decode(from: container)
+        return value
     }
-    
-    private var _container: ProtobufDecodingContainer?
 }

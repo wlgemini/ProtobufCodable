@@ -2,21 +2,18 @@
 import Foundation
 
 
-final class ProtobufDecodingContainer {
-    
-    let dataMutableBufferPointer: UnsafeMutableBufferPointer<Byte>
-    private(set) var map: [_Key: ClosedRange<Int>]
-    
+final class _ProtobufDecodingContainer {
+        
     init(data: Data) {
         // dataMutableBufferPointer
         let dataMutableBufferPointer = UnsafeMutableBufferPointer<Byte>.allocate(capacity: data.count)
         dataMutableBufferPointer.initialize(repeating: 0)
         let copiedBytesCount = data.copyBytes(to: dataMutableBufferPointer)
         assert(copiedBytesCount == data.count)
-        self.dataMutableBufferPointer = dataMutableBufferPointer
+        self._dataMutableBufferPointer = dataMutableBufferPointer
         
         // map
-        self.map = [:]
+        self._map = [:]
         let dataBufferPointer = UnsafeBufferPointer<Byte>(dataMutableBufferPointer)
         var byteIndex: Int = 0
         while byteIndex < dataBufferPointer.count {
@@ -38,12 +35,12 @@ final class ProtobufDecodingContainer {
             case .varint:
                 let payloadByteRange = _Varint.readOne(dataBufferPointer, from: payloadByteIndex)
                 byteIndex = payloadByteIndex + payloadByteRange.count
-                self.map[key] = payloadByteRange
+                self._map[key] = payloadByteRange
                 
             case .bit64:
                 let payloadByteRange: ClosedRange = (payloadByteIndex + 0) ... (payloadByteIndex + 7)
                 byteIndex = payloadByteIndex + 8
-                self.map[key] = payloadByteRange
+                self._map[key] = payloadByteRange
                 
             case .lengthDelimited:
                 let payloadVarintDecode: (Int, Bool, UInt32) = _Varint.decode(dataBufferPointer, from: payloadByteIndex)
@@ -59,12 +56,12 @@ final class ProtobufDecodingContainer {
                 let lengthDelimitedByteRange: ClosedRange = (lengthDelimitedByteIndex + 0) ... (lengthDelimitedByteIndex + lengthDelimitedCount - 1)
                 
                 byteIndex = lengthDelimitedByteIndex + lengthDelimitedByteRange.count
-                self.map[key] = lengthDelimitedByteRange
+                self._map[key] = lengthDelimitedByteRange
            
             case .bit32:
                 let payloadByteRange: ClosedRange = (payloadByteIndex + 0) ... (payloadByteIndex + 3)
                 byteIndex = payloadByteIndex + 4
-                self.map[key] = payloadByteRange
+                self._map[key] = payloadByteRange
                 
             case .unknow:
                 fatalError("unknow wire type")
@@ -73,7 +70,16 @@ final class ProtobufDecodingContainer {
     }
     
     deinit {
-        self.dataMutableBufferPointer.deallocate()
+        self._dataMutableBufferPointer.deallocate()
     }
+    
+    // MARK: Private
+    private let _dataMutableBufferPointer: UnsafeMutableBufferPointer<Byte>
+    private var _map: [_Key: ClosedRange<Int>]
 }
 
+
+extension _ProtobufDecodingContainer {
+    
+    
+}

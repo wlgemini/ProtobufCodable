@@ -54,8 +54,8 @@ extension BinaryInteger {
     /// - Parameter index: bit index
     /// - Returns: a byte
     @inlinable
-    func byte(at index: UInt8) -> UInt8 {
-        assert(UInt8(self.bitWidth) > index)
+    func byte(at index: Int) -> UInt8 {
+        assert(self.bitWidth > index)
         
         return UInt8((self >> index) & 0b1111_1111)
     }
@@ -66,9 +66,8 @@ extension BinaryInteger {
     
     /// get bit at index
     @inlinable
-    func bit(at index: UInt8) -> Bool {
-        // the biggest UInt128 take 128 bit, which within the range of 0 ~ 255 that UInt8 can represent.
-        assert(UInt8(self.bitWidth) > index)
+    func bit(at index: Int) -> Bool {
+        assert(self.bitWidth > index)
         
         let mask: Self = 0b0000_0001 << index
         return (self & mask) > 0 ? true : false
@@ -76,9 +75,8 @@ extension BinaryInteger {
     
     /// set bit true at index
     @inlinable
-    mutating func bitTrue(at index: UInt8) {
-        // the biggest UInt128 take 128 bit, which within the range of 0 ~ 255 that UInt8 can represent.
-        assert(UInt8(self.bitWidth) > index)
+    mutating func bitTrue(at index: Int) {
+        assert(self.bitWidth > index)
         
         let mask: Self = 0b0000_0001 << index
         self = self | mask
@@ -86,9 +84,8 @@ extension BinaryInteger {
     
     /// set bit false at index
     @inlinable
-    mutating func bitFalse(at index: UInt8) {
-        // the biggest UInt128 take 128 bit, which within the range of 0 ~ 255 that UInt8 can represent.
-        assert(UInt8(self.bitWidth) > index)
+    mutating func bitFalse(at index: Int) {
+        assert(self.bitWidth > index)
 
         let mask: Self = ~(0b0000_0001 << index)
         self = self & mask
@@ -96,9 +93,8 @@ extension BinaryInteger {
     
     /// toggle bit at index
     @inlinable
-    mutating func bitToggle(at index: UInt8) {
-        // the biggest UInt128 take 128 bit, which within the range of 0 ~ 255 that UInt8 can represent.
-        assert(UInt8(self.bitWidth) > index)
+    mutating func bitToggle(at index: Int) {
+        assert(self.bitWidth > index)
         
         let mask: Self = 0b0000_0001 << index
         self = self ^ mask

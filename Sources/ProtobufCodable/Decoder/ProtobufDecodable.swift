@@ -8,12 +8,13 @@ public protocol ProtobufDecodable: Decodable {
 
 extension ProtobufDecodable {
     
-    init(from container: ProtobufDecodingContainer) throws {
-        self.init()
-        let mirror = Mirror(reflecting: self)
-        for (_, value) in mirror.children {
-            guard let decodingKey = value as? ProtobufDecodingKey else { continue }
-            decodingKey.decode(from: container)
+    static func _decode(from container: _ProtobufDecodingContainer) throws -> Self {
+        let value = Self.init()
+        let mirror = Mirror(reflecting: value)
+        for child in mirror.children {
+            guard let decodingKey = child.value as? _ProtobufDecodingKey else { continue }
+            try decodingKey.decode(from: container)
         }
+        return value
     }
 }
