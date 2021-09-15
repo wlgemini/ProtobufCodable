@@ -48,7 +48,7 @@ extension _Varint {
 
 extension _Varint {
         
-    static func decode<T>(_ varintPointer: UnsafeBufferPointer<Byte>, from byteIndex: Int) -> (readedByteCount: Int, isTruncating: Bool, value: T)
+    static func decode<T>(_ varintPointer: UnsafeBufferPointer<Byte>, from byteIndex: Int) -> (decodeByteCount: Int, isTruncating: Bool, value: T)
     where T: UnsignedInteger, T: FixedWidthInteger {
         assert(byteIndex < varintPointer.count)
         
@@ -93,7 +93,7 @@ extension _Varint {
 
 extension _Varint {
     
-    static func read(_ varintPointer: UnsafeBufferPointer<Byte>, from byteIndex: Int) -> ClosedRange<Int> {
+    static func readOne(_ varintPointer: UnsafeBufferPointer<Byte>, from byteIndex: Int) -> ClosedRange<Int> {
         assert(byteIndex < varintPointer.count)
         
         var endByteIndex = byteIndex

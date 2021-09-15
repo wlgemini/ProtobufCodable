@@ -36,7 +36,7 @@ enum _WireType: UInt8 {
     /// float and fixed32 have wire type 5, which tells it to expect 32 bits.
     case bit32 = 5 /* 0b0101 */
     
-    /// Use for: unknow type, or proto2's `.startGroup = 3`, `.endGroup = 4`
+    /// Use for: unknow type, or ⚠️ proto2's `.startGroup = 3`, `.endGroup = 4`
     ///
     case unknow = 0b0000_0111
 }

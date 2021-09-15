@@ -22,13 +22,13 @@ final class ProtobufDecodingContainer {
         while byteIndex < dataBufferPointer.count {
             // keyVarintDecode
             let keyVarintDecode: (Int, Bool, UInt32) = _Varint.decode(dataBufferPointer, from: byteIndex)
-            let keyReadedByteCount = keyVarintDecode.0
+            let keyDecodeByteCount = keyVarintDecode.0
             let keyIsTruncating = keyVarintDecode.1
             let keyRaw = keyVarintDecode.2
-            assert(keyIsTruncating == false) // must not truncating value
+            assert(keyIsTruncating == false) // must not truncating `filedNumber`
             
             // payload byte index
-            let payloadByteIndex = byteIndex + keyReadedByteCount
+            let payloadByteIndex = byteIndex + keyDecodeByteCount
             
             // key
             let key = _Key(rawValue: keyRaw)
@@ -36,7 +36,7 @@ final class ProtobufDecodingContainer {
             // key.wireType
             switch key.wireType {
             case .varint:
-                let payloadByteRange = _Varint.read(dataBufferPointer, from: payloadByteIndex)
+                let payloadByteRange = _Varint.readOne(dataBufferPointer, from: payloadByteIndex)
                 byteIndex = payloadByteIndex + payloadByteRange.count
                 self.map[key] = payloadByteRange
                 
@@ -47,14 +47,14 @@ final class ProtobufDecodingContainer {
                 
             case .lengthDelimited:
                 let payloadVarintDecode: (Int, Bool, UInt32) = _Varint.decode(dataBufferPointer, from: payloadByteIndex)
-                let payloadReadedByteCount = payloadVarintDecode.0
+                let payloadDecodeByteCount = payloadVarintDecode.0
                 let payloadIsTruncating = payloadVarintDecode.1
                 let payloadRaw = payloadVarintDecode.2
                 assert(payloadIsTruncating == false)
                 
-                let lengthDelimitedByteIndex = payloadByteIndex + payloadReadedByteCount
+                let lengthDelimitedByteIndex = payloadByteIndex + payloadDecodeByteCount
                 let lengthDelimitedCount = Int(payloadRaw)
-                assert(payloadRaw > 0)
+                assert(lengthDelimitedCount > 0)
                 
                 let lengthDelimitedByteRange: ClosedRange = (lengthDelimitedByteIndex + 0) ... (lengthDelimitedByteIndex + lengthDelimitedCount - 1)
                 
