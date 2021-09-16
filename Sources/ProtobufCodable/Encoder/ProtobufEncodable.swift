@@ -1,5 +1,8 @@
 
-public protocol ProtobufEncodable: Encodable {}
+/// Because of `_ProtobufEncodingKey` is `class`,
+/// any `ProtobufEncodable` type should use `class` for performance.
+/// the *BEST* use case is mark `final` to `ProtobufEncodable` `class`.
+public protocol ProtobufEncodable: Encodable, AnyObject {}
 
 
 extension ProtobufEncodable {

@@ -1,6 +1,8 @@
 
-
-public protocol ProtobufDecodable: Decodable {
+/// Because of `_ProtobufDecodingKey` is `class`,
+/// any `ProtobufDecodable` type should use `class` for performance.
+/// the *BEST* use case is mark `final` to `ProtobufDecodable` `class`.
+public protocol ProtobufDecodable: Decodable, AnyObject {
 
     init()
 }

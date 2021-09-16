@@ -1,11 +1,4 @@
 
-///// a Protobuf Key
-//protocol KeyProtocol {
-//
-//    var key: Key { get }
-//}
-
-
 /// a Varint Key
 ///
 /// Each key in the streamed message is a varint with
