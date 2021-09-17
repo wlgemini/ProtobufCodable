@@ -129,8 +129,8 @@ Normally, an encoded message would never have more than one instance of a non-re
 - `UInt(LittleEndian) >>> UInt (LittleEndian Fixed)`: `UInt(LittleEndian)` > `UInt (LittleEndian Fixed)`
 - `UInt(LittleEndian) >>> UInt (LittleEndian Varint)`: `UInt(LittleEndian)` > `Varint` > `UInt (LittleEndian Varint)`
 - `UInt >>> UInt(LittleEndian)`: `UInt` > `.littleEndian` > `UInt(LittleEndian)`
-- `Int >>> UInt`: `Int` > `ZigZag` > `UInt`
-- `Float >>> UInt`: `Float` > `.bitPattern` > `UInt`
+- `Int >>> UInt(LittleEndian)`: `Int` > `.littleEndian` > `ZigZag` > `UInt`
+- `Float >>> UInt(LittleEndian)`: `Float` > `.bitPattern` > `.littleEndian` > `UInt`
 
 #### Numeric Decode
 *above sequence reversed* 

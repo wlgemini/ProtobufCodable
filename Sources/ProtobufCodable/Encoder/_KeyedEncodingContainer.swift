@@ -1,5 +1,5 @@
 
-final class _ProtobufEncodingContainer {
+final class _KeyedEncodingContainer {
     
     let dataMutableBufferPointer: UnsafeMutableBufferPointer<Byte> = .allocate(capacity: 0)
     
@@ -13,7 +13,7 @@ final class _ProtobufEncodingContainer {
 }
 
 
-extension _ProtobufEncodingContainer {
+extension _KeyedEncodingContainer {
     
     func encodeVarint<T>(_ value: T, for key: _Key)
     where T: FixedWidthInteger, T: UnsignedInteger {
@@ -27,19 +27,10 @@ extension _ProtobufEncodingContainer {
         self._map[key] = pointer
     }
     
-    func encodeLengthDelimited(_ value: [UInt8], for key: _Key) {
+    func encodeLengthDelimited(_ pointer: UnsafeMutableBufferPointer<Byte>, for key: _Key) {
+        self._map[key] = pointer
         
-    }
-    
-    func encodeLengthDelimited(_ value: String, for key: _Key) {
         
-    }
-    
-    func encodeLengthDelimited<EmbeddedMessage>(_ value: EmbeddedMessage, for key: _Key) {
-        
-    }
-    
-    func encodeLengthDelimited<EmbeddedMessage>(_ value: Array<EmbeddedMessage>, for key: _Key) {
         
     }
 }

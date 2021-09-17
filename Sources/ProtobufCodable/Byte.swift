@@ -1,2 +1,2 @@
 
-typealias Byte = UInt8
+public typealias Byte = UInt8

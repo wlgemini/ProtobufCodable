@@ -1,14 +1,15 @@
 
+enum _BinaryInteger<T> {}
 
-extension BinaryInteger where Self: UnsignedInteger, Self: FixedWidthInteger {
+extension _BinaryInteger where T: FixedWidthInteger {
     
     /// Find the Leading non-Zero Bit index, -1 when not find
     ///
     /// `SignedInteger` has a sign bit, so it's not approperate for this calculation.
     /// (same as `mostSignificantBitIndex`)
     @inlinable
-    var leadingNonZeroBitIndex: Int {
-        self.bitWidth - self.leadingZeroBitCount - 1
+    static func leadingNonZeroBitIndex(_ value: T) -> Int {
+        value.bitWidth - value.leadingZeroBitCount - 1
     }
     
     /*
@@ -32,80 +33,82 @@ extension BinaryInteger where Self: UnsignedInteger, Self: FixedWidthInteger {
 }
 
 
-extension BinaryInteger {
+extension _BinaryInteger where T: BinaryInteger {
     
     @inlinable
-    var bit2ByteScalar: Self {
-        if (self & 0b0000_0111) == 0 {
-            return self >> 3 // 没有余数
+    static func bit2ByteScalar(_ value: T) -> T {
+        if (value & 0b0000_0111) == 0 {
+            return value >> 3 // 没有余数
         } else {
-            return (self >> 3) + 1 // 有余数
+            return (value >> 3) + 1 // 有余数
         }
     }
     
     @inlinable
-    var byte2BitScalar: Self { self << 3 }
+    static func byte2BitScalar(_ value: T) -> T {
+        value << 3
+    }
 }
 
 
-extension BinaryInteger {
+extension _BinaryInteger where T: BinaryInteger {
     
     /// get a byte from bit index
     /// - Parameter index: bit index
     /// - Returns: a byte
     @inlinable
-    func byte(at index: Int) -> UInt8 {
-        assert(self.bitWidth > index)
+    static func byte(_ value: T, at index: Int) -> UInt8 {
+        assert(value.bitWidth > index)
         
-        return UInt8((self >> index) & 0b1111_1111)
+        return UInt8((value >> index) & 0b1111_1111)
     }
 }
 
 
-extension BinaryInteger {
+extension _BinaryInteger where T: BinaryInteger {
     
     /// get bit at index
     @inlinable
-    func bit(at index: Int) -> Bool {
-        assert(self.bitWidth > index)
+    static func bit(_ value: T, at index: Int) -> Bool {
+        assert(value.bitWidth > index)
         
-        let mask: Self = 0b0000_0001 << index
-        return (self & mask) > 0 ? true : false
+        let mask: T = 0b0000_0001 << index
+        return (value & mask) > 0 ? true : false
     }
     
     /// set bit true at index
     @inlinable
-    mutating func bitTrue(at index: Int) {
-        assert(self.bitWidth > index)
+    static func bitTrue(_ value: T, at index: Int) -> T {
+        assert(value.bitWidth > index)
         
-        let mask: Self = 0b0000_0001 << index
-        self = self | mask
+        let mask: T = 0b0000_0001 << index
+        return value | mask
     }
     
     /// set bit false at index
     @inlinable
-    mutating func bitFalse(at index: Int) {
-        assert(self.bitWidth > index)
+    static  func bitFalse(_ value: T, at index: Int) -> T {
+        assert(value.bitWidth > index)
 
-        let mask: Self = ~(0b0000_0001 << index)
-        self = self & mask
+        let mask: T = ~(0b0000_0001 << index)
+        return value & mask
     }
     
     /// toggle bit at index
     @inlinable
-    mutating func bitToggle(at index: Int) {
-        assert(self.bitWidth > index)
+    static  func bitToggle(_ value: T, at index: Int) -> T {
+        assert(value.bitWidth > index)
         
-        let mask: Self = 0b0000_0001 << index
-        self = self ^ mask
+        let mask: T = 0b0000_0001 << index
+        return value ^ mask
     }
 }
 
 
 
-extension BinaryInteger {
+extension _BinaryInteger where T: BinaryInteger {
     
-    var binaryDescription: String {
+    static func description(_ value: T) -> String {
         var binaryString: String = ""
         withUnsafeBytes(of: self) { bufferPointer in
             for byte in bufferPointer {
