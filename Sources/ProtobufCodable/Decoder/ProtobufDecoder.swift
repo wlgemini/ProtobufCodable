@@ -11,13 +11,13 @@ public final class ProtobufDecoder {
         self._deinit()
         
         // copy data
-        let dataMutableBufferPointer = try self._copy(data: data)
+        let byteBuffer = try _ByteBuffer(from: data)
         
         // map data
-        let map = try self._decode(dataMutableBufferPointer: dataMutableBufferPointer)
+        let map = try self._decode(dataMutableBufferPointer: byteBuffer.pointer)
         
         // save
-        self._dataMutableBufferPointer = dataMutableBufferPointer
+        self._byteBuffer = byteBuffer
         self._map = map
         
         // decode
@@ -31,20 +31,12 @@ public final class ProtobufDecoder {
     }
     
     // MARK: Private
-    private var _dataMutableBufferPointer: UnsafeMutableBufferPointer<Byte>?
+    private var _byteBuffer: _ByteBuffer?
     private var _map: [_Key: ClosedRange<Int>]?
     
-    private func _copy(data: Data) throws -> UnsafeMutableBufferPointer<Byte> {
-        let dataMutableBufferPointer = UnsafeMutableBufferPointer<Byte>.allocate(capacity: data.count)
-        dataMutableBufferPointer.initialize(repeating: 0)
-        let copiedBytesCount = data.copyBytes(to: dataMutableBufferPointer)
-        assert(copiedBytesCount == data.count)
-        return dataMutableBufferPointer
-    }
-    
-    private func _decode(dataMutableBufferPointer: UnsafeMutableBufferPointer<Byte>) throws -> [_Key: ClosedRange<Int>] {
+    private func _decode(dataMutableBufferPointer: UnsafeMutableRawBufferPointer) throws -> [_Key: ClosedRange<Int>] {
         var map: [_Key: ClosedRange<Int>] = [:]
-        let dataBufferPointer = UnsafeBufferPointer<Byte>(dataMutableBufferPointer)
+        let dataBufferPointer = UnsafeRawBufferPointer(dataMutableBufferPointer)
         var byteIndex: Int = 0
         while byteIndex < dataBufferPointer.count {
             // keyVarintDecode
@@ -110,10 +102,7 @@ public final class ProtobufDecoder {
     }
     
     private func _deinit() {
-        self._map?.removeAll()
-        self._dataMutableBufferPointer?.deallocate()
-        
         self._map = nil
-        self._dataMutableBufferPointer = nil
+        self._byteBuffer = nil
     }
 }

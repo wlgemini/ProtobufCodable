@@ -1,7 +1,7 @@
 
-enum _BinaryInteger<T> {}
+enum _Integer<T> {}
 
-extension _BinaryInteger where T: FixedWidthInteger {
+extension _Integer where T: FixedWidthInteger {
     
     /// Find the Leading non-Zero Bit index, -1 when not find
     ///
@@ -33,7 +33,7 @@ extension _BinaryInteger where T: FixedWidthInteger {
 }
 
 
-extension _BinaryInteger where T: BinaryInteger {
+extension _Integer where T: BinaryInteger {
     
     @inlinable
     static func bit2ByteScalar(_ value: T) -> T {
@@ -51,7 +51,7 @@ extension _BinaryInteger where T: BinaryInteger {
 }
 
 
-extension _BinaryInteger where T: BinaryInteger {
+extension _Integer where T: BinaryInteger {
     
     /// get a byte from bit index
     /// - Parameter index: bit index
@@ -65,7 +65,7 @@ extension _BinaryInteger where T: BinaryInteger {
 }
 
 
-extension _BinaryInteger where T: BinaryInteger {
+extension _Integer where T: BinaryInteger {
     
     /// get bit at index
     @inlinable
@@ -87,7 +87,7 @@ extension _BinaryInteger where T: BinaryInteger {
     
     /// set bit false at index
     @inlinable
-    static  func bitFalse(_ value: T, at index: Int) -> T {
+    static func bitFalse(_ value: T, at index: Int) -> T {
         assert(value.bitWidth > index)
 
         let mask: T = ~(0b0000_0001 << index)
@@ -96,7 +96,7 @@ extension _BinaryInteger where T: BinaryInteger {
     
     /// toggle bit at index
     @inlinable
-    static  func bitToggle(_ value: T, at index: Int) -> T {
+    static func bitToggle(_ value: T, at index: Int) -> T {
         assert(value.bitWidth > index)
         
         let mask: T = 0b0000_0001 << index
@@ -105,8 +105,43 @@ extension _BinaryInteger where T: BinaryInteger {
 }
 
 
+extension _Integer where T == UInt32 {
+    
+    /// Returns the next power of two unless that would overflow, in which case UInt32.max (on 64-bit systems) or
+    /// Int32.max (on 32-bit systems) is returned. The returned value is always safe to be cast to Int and passed
+    /// to malloc on all platforms.
+    static func nextPowerOf2ClampedToMax(_ value: UInt32) -> UInt32 {
+        guard value > 0 else {
+            return 1
+        }
 
-extension _BinaryInteger where T: BinaryInteger {
+        var n = value
+
+        #if arch(arm) || arch(i386)
+        // on 32-bit platforms we can't make use of a whole UInt32.max (as it doesn't fit in an Int)
+        let max = UInt32(Int.max)
+        #else
+        // on 64-bit platforms we're good
+        let max = UInt32.max
+        #endif
+
+        n -= 1
+        n |= n >> 1
+        n |= n >> 2
+        n |= n >> 4
+        n |= n >> 8
+        n |= n >> 16
+        if n != max {
+            n += 1
+        }
+
+        return n
+    }
+}
+
+
+
+extension _Integer where T: BinaryInteger {
     
     static func description(_ value: T) -> String {
         var binaryString: String = ""

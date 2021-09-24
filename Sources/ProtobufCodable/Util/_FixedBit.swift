@@ -7,13 +7,13 @@ extension _FixedBit {
     static func encode<T>(_ value: T) -> UnsafeMutableBufferPointer<Byte>
     where T: FixedWidthInteger, T: UnsignedInteger {
         let bitCount = value.bitWidth
-        let mutablePointer = UnsafeMutableBufferPointer<Byte>.allocate(capacity: _BinaryInteger.bit2ByteScalar(bitCount))
+        let mutablePointer = UnsafeMutableBufferPointer<Byte>.allocate(capacity: _Integer.bit2ByteScalar(bitCount))
         mutablePointer.initialize(repeating: 0)
         
         var bitIndex: Int = 0
         var byteIndex: Int = 0
         while bitIndex < bitCount {
-            let byte = _BinaryInteger.byte(value, at: bitIndex)
+            let byte = _Integer.byte(value, at: bitIndex)
             mutablePointer[byteIndex] = byte
             
             bitIndex += 8

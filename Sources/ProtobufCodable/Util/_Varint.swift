@@ -6,7 +6,7 @@ extension _Varint {
     static func encode<T>(_ value: T) -> UnsafeMutableBufferPointer<Byte>
     where T: FixedWidthInteger {
         // find the Leading Non-zero Bit Index
-        let lnbIndex: Int = _BinaryInteger.leadingNonZeroBitIndex(value)
+        let lnbIndex: Int = _Integer.leadingNonZeroBitIndex(value)
         guard lnbIndex >= 0 else {
             let mutablePointer = UnsafeMutableBufferPointer<Byte>.allocate(capacity: 0)
             mutablePointer.initialize(repeating: 0)
@@ -19,7 +19,7 @@ extension _Varint {
         // capacity
         let varintFlagBitCount: Int = (lnbIndex / 7) + 1 // every 7 bit need a varint flag
         let varintBitCount: Int = lnbCount + varintFlagBitCount
-        let varintByteCount: Int = _BinaryInteger.bit2ByteScalar(varintBitCount)
+        let varintByteCount: Int = _Integer.bit2ByteScalar(varintBitCount)
         
         // alloc memory for varint
         let varintPointer = UnsafeMutableBufferPointer<Byte>.allocate(capacity: varintByteCount)
@@ -29,8 +29,8 @@ extension _Varint {
         var varintByteIndex: Int = 0
         var bitIndex: Int = 0
         while bitIndex < lnbCount {
-            var bit8: Byte = _BinaryInteger.byte(value, at: bitIndex)
-            bit8 = _BinaryInteger.bitTrue(bit8, at: 7)
+            var bit8: Byte = _Integer.byte(value, at: bitIndex)
+            bit8 = _Integer.bitTrue(bit8, at: 7)
             varintPointer[varintByteIndex] = bit8
             bitIndex += 7
             varintByteIndex += 1
@@ -38,7 +38,7 @@ extension _Varint {
         
         // set last varint flag
         var bit8: Byte = varintPointer[varintByteIndex - 1]
-        bit8 = _BinaryInteger.bitFalse(bit8, at: 7)
+        bit8 = _Integer.bitFalse(bit8, at: 7)
         varintPointer[varintByteIndex - 1] = bit8
         
         // init
@@ -48,7 +48,7 @@ extension _Varint {
 
 extension _Varint {
         
-    static func decode<T>(_ varintPointer: UnsafeBufferPointer<Byte>, from byteIndex: Int) -> (decodeByteCount: Int, isTruncating: Bool, value: T)
+    static func decode<T>(_ varintPointer: UnsafeRawBufferPointer, from byteIndex: Int) -> (decodeByteCount: Int, isTruncating: Bool, value: T)
     where T: FixedWidthInteger {
         assert(byteIndex < varintPointer.count)
         
@@ -93,7 +93,7 @@ extension _Varint {
 
 extension _Varint {
     
-    static func readOne(_ varintPointer: UnsafeBufferPointer<Byte>, from byteIndex: Int) -> ClosedRange<Int> {
+    static func readOne(_ varintPointer: UnsafeRawBufferPointer, from byteIndex: Int) -> ClosedRange<Int> {
         assert(byteIndex < varintPointer.count)
         
         var endByteIndex = byteIndex
