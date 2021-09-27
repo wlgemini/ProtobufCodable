@@ -1,14 +1,15 @@
 
-enum _Integer<T> {}
+enum _Integer {}
 
-extension _Integer where T: FixedWidthInteger {
+extension _Integer {
     
     /// Find the Leading non-Zero Bit index, -1 when not find
     ///
     /// `SignedInteger` has a sign bit, so it's not approperate for this calculation.
     /// (same as `mostSignificantBitIndex`)
     @inlinable
-    static func leadingNonZeroBitIndex(_ value: T) -> Int {
+    static func leadingNonZeroBitIndex<T>(_ value: T) -> Int
+    where T: FixedWidthInteger {
         value.bitWidth - value.leadingZeroBitCount - 1
     }
     
@@ -30,13 +31,24 @@ extension _Integer where T: FixedWidthInteger {
         return lb
     }
     */
+    
+    /// Find the Leading non-Zero Bit Count
+    ///
+    /// `SignedInteger` has a sign bit, so it's not approperate for this calculation.
+    /// (same as `mostSignificantBitIndex`)
+    @inlinable
+    static func leadingNonZeroBitCount<T>(_ value: T) -> Int
+    where T: FixedWidthInteger {
+        value.bitWidth - value.leadingZeroBitCount
+    }
 }
 
 
-extension _Integer where T: BinaryInteger {
+extension _Integer {
     
     @inlinable
-    static func bit2ByteScalar(_ value: T) -> T {
+    static func bit2ByteScalar<T>(_ value: T) -> T
+    where T: BinaryInteger {
         if (value & 0b0000_0111) == 0 {
             return value >> 3 // 没有余数
         } else {
@@ -45,19 +57,21 @@ extension _Integer where T: BinaryInteger {
     }
     
     @inlinable
-    static func byte2BitScalar(_ value: T) -> T {
+    static func byte2BitScalar<T>(_ value: T) -> T
+    where T: FixedWidthInteger {
         value << 3
     }
 }
 
 
-extension _Integer where T: BinaryInteger {
+extension _Integer {
     
     /// get a byte from bit index
     /// - Parameter index: bit index
     /// - Returns: a byte
     @inlinable
-    static func byte(_ value: T, at index: Int) -> UInt8 {
+    static func byte<T>(_ value: T, at index: Int) -> UInt8
+    where T: BinaryInteger {
         assert(value.bitWidth > index)
         
         return UInt8((value >> index) & 0b1111_1111)
@@ -65,11 +79,12 @@ extension _Integer where T: BinaryInteger {
 }
 
 
-extension _Integer where T: BinaryInteger {
+extension _Integer {
     
     /// get bit at index
     @inlinable
-    static func bit(_ value: T, at index: Int) -> Bool {
+    static func bit<T>(_ value: T, at index: Int) -> Bool
+    where T: BinaryInteger {
         assert(value.bitWidth > index)
         
         let mask: T = 0b0000_0001 << index
@@ -78,7 +93,8 @@ extension _Integer where T: BinaryInteger {
     
     /// set bit true at index
     @inlinable
-    static func bitTrue(_ value: T, at index: Int) -> T {
+    static func bitTrue<T>(_ value: T, at index: Int) -> T
+    where T: BinaryInteger {
         assert(value.bitWidth > index)
         
         let mask: T = 0b0000_0001 << index
@@ -87,7 +103,8 @@ extension _Integer where T: BinaryInteger {
     
     /// set bit false at index
     @inlinable
-    static func bitFalse(_ value: T, at index: Int) -> T {
+    static func bitFalse<T>(_ value: T, at index: Int) -> T
+    where T: BinaryInteger {
         assert(value.bitWidth > index)
 
         let mask: T = ~(0b0000_0001 << index)
@@ -96,7 +113,8 @@ extension _Integer where T: BinaryInteger {
     
     /// toggle bit at index
     @inlinable
-    static func bitToggle(_ value: T, at index: Int) -> T {
+    static func bitToggle<T>(_ value: T, at index: Int) -> T
+    where T: BinaryInteger {
         assert(value.bitWidth > index)
         
         let mask: T = 0b0000_0001 << index
@@ -105,45 +123,26 @@ extension _Integer where T: BinaryInteger {
 }
 
 
-extension _Integer where T == UInt32 {
+
+extension _Integer {
     
-    /// Returns the next power of two unless that would overflow, in which case UInt32.max (on 64-bit systems) or
-    /// Int32.max (on 32-bit systems) is returned. The returned value is always safe to be cast to Int and passed
-    /// to malloc on all platforms.
-    static func nextPowerOf2ClampedToMax(_ value: UInt32) -> UInt32 {
-        guard value > 0 else {
-            return 1
-        }
-
-        var n = value
-
-        #if arch(arm) || arch(i386)
-        // on 32-bit platforms we can't make use of a whole UInt32.max (as it doesn't fit in an Int)
-        let max = UInt32(Int.max)
-        #else
-        // on 64-bit platforms we're good
-        let max = UInt32.max
-        #endif
-
-        n -= 1
-        n |= n >> 1
-        n |= n >> 2
-        n |= n >> 4
-        n |= n >> 8
-        n |= n >> 16
-        if n != max {
-            n += 1
-        }
-
-        return n
+    static func varintByteCount<T>(for value: T) -> Int
+    where T: FixedWidthInteger {
+        let lnbIndex: Int = _Integer.leadingNonZeroBitIndex(value)
+        let lnbCount: Int = _Integer.leadingNonZeroBitCount(value)
+        let varintFlagBitCount: Int = (lnbIndex / 7) + 1 // every 7 bit need a varint flag
+        let varintBitCount: Int = lnbCount + varintFlagBitCount
+        let varintByteCount: Int = _Integer.bit2ByteScalar(varintBitCount)
+        return varintByteCount
     }
 }
 
 
 
-extension _Integer where T: BinaryInteger {
+extension _Integer {
     
-    static func description(_ value: T) -> String {
+    static func description<T>(_ value: T) -> String
+    where T: BinaryInteger {
         var binaryString: String = ""
         withUnsafeBytes(of: self) { bufferPointer in
             for byte in bufferPointer {

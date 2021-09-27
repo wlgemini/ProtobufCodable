@@ -17,8 +17,8 @@ extension _KeyedEncodingContainer {
     
     func encodeVarint<T>(_ value: T, for key: _Key)
     where T: FixedWidthInteger, T: UnsignedInteger {
-        let pointer = _Varint.encode(value)
-        self._map[key] = pointer
+//        let pointer = _Varint.encode(value)
+//        self._map[key] = pointer
     }
     
     func encodeFixedBit<T>(_ value: T, for key: _Key)

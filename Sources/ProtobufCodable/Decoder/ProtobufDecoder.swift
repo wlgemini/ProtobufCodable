@@ -14,7 +14,7 @@ public final class ProtobufDecoder {
         let byteBuffer = try _ByteBuffer(from: data)
         
         // map data
-        let map = try self._decode(dataMutableBufferPointer: byteBuffer.pointer)
+        let map = try self._decode(buffer: byteBuffer)
         
         // save
         self._byteBuffer = byteBuffer
@@ -32,65 +32,47 @@ public final class ProtobufDecoder {
     
     // MARK: Private
     private var _byteBuffer: _ByteBuffer?
-    private var _map: [_Key: ClosedRange<Int>]?
+    private var _map: [_Key: Range<Int>]?
     
-    private func _decode(dataMutableBufferPointer: UnsafeMutableRawBufferPointer) throws -> [_Key: ClosedRange<Int>] {
-        var map: [_Key: ClosedRange<Int>] = [:]
-        let dataBufferPointer = UnsafeRawBufferPointer(dataMutableBufferPointer)
-        var byteIndex: Int = 0
-        while byteIndex < dataBufferPointer.count {
+    private func _decode(buffer: _ByteBuffer) throws -> [_Key: Range<Int>] {
+        var map: [_Key: Range<Int>] = [:]
+        while buffer.index < buffer.count {
             // keyVarintDecode
-            let keyVarintDecode: (Int, Bool, UInt32) = _Varint.decode(dataBufferPointer, from: byteIndex)
-            let keyDecodeByteCount = keyVarintDecode.0
-            let keyIsTruncating = keyVarintDecode.1
-            let keyRaw = keyVarintDecode.2
+            let (_, keyIsTruncating, keyValue) = try buffer.readVarint(UInt32.self)//_Varint.decode(dataBufferPointer, from: byteIndex)
             if keyIsTruncating {
                 // must not truncating `key`
                 throw ProtobufDeccodingError.corruptedData("varint decode: `key` truncated")
             }
             
-            // payload byte index
-            let payloadByteIndex = byteIndex + keyDecodeByteCount
-            
             // key
-            let key = _Key(rawValue: keyRaw)
+            let key = _Key(rawValue: keyValue)
             
             // key.wireType
             switch key.wireType {
             case .varint:
-                let payloadByteRange = _Varint.readOne(dataBufferPointer, from: payloadByteIndex)
-                byteIndex = payloadByteIndex + payloadByteRange.count
+                let payloadByteRange = try buffer.readVarintOne()
                 map[key] = payloadByteRange
                 
             case .bit64:
-                let payloadByteRange: ClosedRange = (payloadByteIndex + 0) ... (payloadByteIndex + 7)
-                byteIndex = payloadByteIndex + 8
+                let (payloadByteRange, _) = try buffer.readFixedWidthInteger(UInt64.self)
                 map[key] = payloadByteRange
                 
             case .lengthDelimited:
-                let payloadVarintDecode: (Int, Bool, UInt32) = _Varint.decode(dataBufferPointer, from: payloadByteIndex)
-                let payloadDecodeByteCount = payloadVarintDecode.0
-                let payloadIsTruncating = payloadVarintDecode.1
-                let payloadRaw = payloadVarintDecode.2
-                assert(payloadIsTruncating == false)
-                if payloadIsTruncating {
+                let (_, lengthDelimitedIsTruncating, lengthDelimitedValue) = try buffer.readVarint(UInt32.self)
+                if lengthDelimitedIsTruncating {
                     throw ProtobufDeccodingError.corruptedData("varint decode: `lengthDelimited.length` truncated")
                 }
                 
-                let lengthDelimitedByteIndex = payloadByteIndex + payloadDecodeByteCount
-                let lengthDelimitedCount = Int(payloadRaw)
+                let lengthDelimitedCount = Int(lengthDelimitedValue)
                 if lengthDelimitedCount <= 0 {
                     throw ProtobufDeccodingError.corruptedData("varint decode: `lengthDelimited.length` is 0")
                 }
                 
-                let lengthDelimitedByteRange: ClosedRange = (lengthDelimitedByteIndex + 0) ... (lengthDelimitedByteIndex + lengthDelimitedCount - 1)
-                
-                byteIndex = lengthDelimitedByteIndex + lengthDelimitedByteRange.count
+                let lengthDelimitedByteRange = buffer.readBytes(lengthDelimitedCount)
                 map[key] = lengthDelimitedByteRange
                 
             case .bit32:
-                let payloadByteRange: ClosedRange = (payloadByteIndex + 0) ... (payloadByteIndex + 3)
-                byteIndex = payloadByteIndex + 4
+                let (payloadByteRange, _) = try buffer.readFixedWidthInteger(UInt32.self)
                 map[key] = payloadByteRange
                 
             case .unknow:
