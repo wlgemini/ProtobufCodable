@@ -39,20 +39,20 @@ final class _ByteBuffer {
 extension _ByteBuffer {
     
     @inlinable
-    func readByteOne() throws -> UInt8 {
-        let byte: UInt8 = try self.readByteOne(at: self._index)
+    func readByte() throws -> UInt8 {
+        let byte: UInt8 = try self.getByte(at: self._index)
         self._index += 1
         return byte
     }
     
     @inlinable
-    func writeByteOne(_ value: UInt8) throws {
-        try self.writeByteOne(value, at: self._index)
+    func writeByte(_ value: UInt8) throws {
+        try self.setByte(value, at: self._index)
         self._index += 1
     }
     
     @inlinable
-    func readByteOne(at index: Int) throws -> UInt8 {
+    func getByte(at index: Int) throws -> UInt8 {
         guard index < self._pointer.count else {
             throw ProtobufDeccodingError.corruptedData("index out of bounds")
         }
@@ -62,7 +62,7 @@ extension _ByteBuffer {
     }
     
     @inlinable
-    func writeByteOne(_ value: UInt8, at index: Int) throws {
+    func setByte(_ value: UInt8, at index: Int) throws {
         guard index < self._pointer.count else {
             throw ProtobufDeccodingError.corruptedData("index out of bounds")
         }
@@ -75,6 +75,7 @@ extension _ByteBuffer {
 // MARK: - _ByteBuffer FixedWidthInteger
 extension _ByteBuffer {
     
+    /// using little-endian representation
     func readFixedWidthInteger<T>(_ type: T.Type) throws -> (readRange: Range<Int>, value: T)
     where T: FixedWidthInteger {
         let lowerBound: Int = self._index
@@ -149,11 +150,11 @@ extension _ByteBuffer {
 // MARK: - _ByteBuffer Varint
 extension _ByteBuffer {
     
-    func readVarintOne() throws -> Range<Int> {
+    func readVarint() throws -> Range<Int> {
         let lowerBound: Int = self._index
         
         while true {
-            let byte = try self.readByteOne()
+            let byte = try self.readByte()
             if (byte & 0b1000_0000) != 0b1000_0000 {
                 break
             }
@@ -176,7 +177,7 @@ extension _ByteBuffer {
         var hasVarintFlagBit: Bool = false
         while true {
             // read a varint byte
-            let varintByte: UInt8 = try self.readByteOne()
+            let varintByte: UInt8 = try self.readByte()
             
             // value update
             let byte: UInt8 = varintByte & 0b0111_1111
@@ -211,7 +212,7 @@ extension _ByteBuffer {
         let lnbIndex: Int = _Integer.leadingNonZeroBitIndex(value)
         guard lnbIndex >= 0 else {
             // write one byte for 0
-            try self.writeByteOne(0)
+            try self.writeByte(0)
             let upperBound = self._index
             let readRange = lowerBound ..< upperBound
             return readRange
@@ -225,14 +226,14 @@ extension _ByteBuffer {
         while bitIndex < lnbCount {
             var bit8: Byte = _Integer.byte(value, at: bitIndex)
             bit8 = _Integer.bitTrue(bit8, at: 7)
-            try self.writeByteOne(bit8)
+            try self.writeByte(bit8)
             bitIndex += 7
         }
         
         // set last varint flag
-        var bit8: UInt8 = try self.readByteOne(at: self._index - 1)
+        var bit8: UInt8 = try self.getByte(at: self._index - 1)
         bit8 = _Integer.bitFalse(bit8, at: 7)
-        try self.writeByteOne(bit8, at: self._index - 1)
+        try self.setByte(bit8, at: self._index - 1)
         
         // return
         let upperBound = self._index

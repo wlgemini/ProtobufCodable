@@ -14,11 +14,10 @@ public final class ProtobufDecoder {
         let byteBuffer = try _ByteBuffer(from: data)
         
         // map data
-        let map = try self._decode(buffer: byteBuffer)
+        try self._decode(buffer: byteBuffer)
         
         // save
         self._byteBuffer = byteBuffer
-        self._map = map
         
         // decode
         let value = try T._decode(from: self)
@@ -32,13 +31,16 @@ public final class ProtobufDecoder {
     
     // MARK: Private
     private var _byteBuffer: _ByteBuffer?
-    private var _map: [_Key: Range<Int>]?
     
-    private func _decode(buffer: _ByteBuffer) throws -> [_Key: Range<Int>] {
-        var map: [_Key: Range<Int>] = [:]
+    private var _mapVarint: [_Key: Range<Int>] = [:]
+    private var _mapBit64: [_Key: (Range<Int>, UInt64)] = [:]
+    private var _mapLengthDelimited: [_Key: Range<Int>] = [:]
+    private var _mapBit32: [_Key: (Range<Int>, UInt32)] = [:]
+    
+    private func _decode(buffer: _ByteBuffer) throws {
         while buffer.index < buffer.count {
             // keyVarintDecode
-            let (_, keyIsTruncating, keyValue) = try buffer.readVarint(UInt32.self)//_Varint.decode(dataBufferPointer, from: byteIndex)
+            let (_, keyIsTruncating, keyValue) = try buffer.readVarint(UInt32.self)
             if keyIsTruncating {
                 // must not truncating `key`
                 throw ProtobufDeccodingError.corruptedData("varint decode: `key` truncated")
@@ -50,12 +52,11 @@ public final class ProtobufDecoder {
             // key.wireType
             switch key.wireType {
             case .varint:
-                let payloadByteRange = try buffer.readVarintOne()
-                map[key] = payloadByteRange
+                let payloadByteRange = try buffer.readVarint()
+                self._mapVarint[key] = payloadByteRange
                 
             case .bit64:
-                let (payloadByteRange, _) = try buffer.readFixedWidthInteger(UInt64.self)
-                map[key] = payloadByteRange
+                self._mapBit64[key] = try buffer.readFixedWidthInteger(UInt64.self)
                 
             case .lengthDelimited:
                 let (_, lengthDelimitedIsTruncating, lengthDelimitedValue) = try buffer.readVarint(UInt32.self)
@@ -69,22 +70,24 @@ public final class ProtobufDecoder {
                 }
                 
                 let lengthDelimitedByteRange = buffer.readBytes(lengthDelimitedCount)
-                map[key] = lengthDelimitedByteRange
+                self._mapLengthDelimited[key] = lengthDelimitedByteRange
                 
             case .bit32:
-                let (payloadByteRange, _) = try buffer.readFixedWidthInteger(UInt32.self)
-                map[key] = payloadByteRange
+                self._mapBit32[key] = try buffer.readFixedWidthInteger(UInt32.self)
                 
             case .unknow:
+                #warning("throw ProtobufDeccodingError.unknowWireType 就不能向下兼容了，怎么办？")
                 throw ProtobufDeccodingError.unknowWireType
             }
         }
-        
-        return map
     }
     
     private func _deinit() {
-        self._map = nil
+        self._mapVarint.removeAll()
+        self._mapBit64.removeAll()
+        self._mapLengthDelimited.removeAll()
+        self._mapBit32.removeAll()
+        
         self._byteBuffer = nil
     }
 }
