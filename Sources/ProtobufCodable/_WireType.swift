@@ -9,6 +9,13 @@ enum _WireType: UInt8 {
     ///
     case varint = 0 /* 0b0000 */
     
+    /// Use for: fixed32, sfixed32, float
+    ///
+    /// The values are stored in little-endian byte order.
+    ///
+    /// float and fixed32 have wire type 5, which tells it to expect 32 bits.
+    case bit32 = 5 /* 0b0101 */
+    
     /// Use for: fixed64, sfixed64, double
     ///
     /// The values are stored in little-endian byte order.
@@ -28,13 +35,6 @@ enum _WireType: UInt8 {
     /// - `Packed repeated fields`: marked as `repeated`, it's just an `Array<Type>`. (In `proto3`, `repeated` fields of scalar numeric types use packed encoding by default.)
     ///
     case lengthDelimited = 2 /* 0b0010 */
-    
-    /// Use for: fixed32, sfixed32, float
-    ///
-    /// The values are stored in little-endian byte order.
-    ///
-    /// float and fixed32 have wire type 5, which tells it to expect 32 bits.
-    case bit32 = 5 /* 0b0101 */
     
     /// Use for: unknow type, or ⚠️ proto2's `.startGroup = 3`, `.endGroup = 4`
     ///

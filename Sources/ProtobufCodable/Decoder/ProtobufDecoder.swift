@@ -7,17 +7,15 @@ public final class ProtobufDecoder {
     
     public func decode<T>(_ type: T.Type, from data: Data) throws -> T
     where T : ProtobufDecodable {
-        // deinit any heap data
-        self._deinit()
+        // clean data
+        self._clean()
         
-        // copy data
-        let byteBuffer = try _ByteBuffer(from: data)
+        // copy data to buffer
+        let byteBufferReader = try _ByteBufferReader(from: data)
+        self._byteBufferReader = byteBufferReader
         
-        // map data
-        try self._decode(buffer: byteBuffer)
-        
-        // save
-        self._byteBuffer = byteBuffer
+        // read buffer
+        try self._read(buffer: byteBufferReader)
         
         // decode
         let value = try T._decode(from: self)
@@ -26,18 +24,21 @@ public final class ProtobufDecoder {
     }
     
     deinit {
-        self._deinit()
+        self._clean()
     }
     
-    // MARK: Private
-    private var _byteBuffer: _ByteBuffer?
+    // MARK: Internal
+    var _byteBufferReader: _ByteBufferReader?
+    var _mapVarint: [_Key: Range<Int>] = [:]
+    var _mapBit32: [_Key: (Range<Int>, UInt32)] = [:]
+    var _mapBit64: [_Key: (Range<Int>, UInt64)] = [:]
+    var _mapLengthDelimited: [_Key: Range<Int>] = [:]
     
-    private var _mapVarint: [_Key: Range<Int>] = [:]
-    private var _mapBit64: [_Key: (Range<Int>, UInt64)] = [:]
-    private var _mapLengthDelimited: [_Key: Range<Int>] = [:]
-    private var _mapBit32: [_Key: (Range<Int>, UInt32)] = [:]
+}
+
+extension ProtobufDecoder {
     
-    private func _decode(buffer: _ByteBuffer) throws {
+    private func _read(buffer: _ByteBufferReader) throws {
         while buffer.index < buffer.count {
             // keyVarintDecode
             let (_, keyIsTruncating, keyValue) = try buffer.readVarint(UInt32.self)
@@ -55,6 +56,9 @@ public final class ProtobufDecoder {
                 let payloadByteRange = try buffer.readVarint()
                 self._mapVarint[key] = payloadByteRange
                 
+            case .bit32:
+                self._mapBit32[key] = try buffer.readFixedWidthInteger(UInt32.self)
+                
             case .bit64:
                 self._mapBit64[key] = try buffer.readFixedWidthInteger(UInt64.self)
                 
@@ -69,25 +73,20 @@ public final class ProtobufDecoder {
                     throw ProtobufDeccodingError.corruptedData("varint decode: `lengthDelimited.length` is 0")
                 }
                 
-                let lengthDelimitedByteRange = buffer.readBytes(lengthDelimitedCount)
+                let lengthDelimitedByteRange = try buffer.readBytes(count: lengthDelimitedCount)
                 self._mapLengthDelimited[key] = lengthDelimitedByteRange
                 
-            case .bit32:
-                self._mapBit32[key] = try buffer.readFixedWidthInteger(UInt32.self)
-                
             case .unknow:
-                #warning("throw ProtobufDeccodingError.unknowWireType 就不能向下兼容了，怎么办？")
                 throw ProtobufDeccodingError.unknowWireType
             }
         }
     }
     
-    private func _deinit() {
+    private func _clean() {
         self._mapVarint.removeAll()
         self._mapBit64.removeAll()
         self._mapLengthDelimited.removeAll()
         self._mapBit32.removeAll()
-        
-        self._byteBuffer = nil
+        self._byteBufferReader = nil
     }
 }
