@@ -53,7 +53,7 @@ extension ProtobufDecoder {
             // key.wireType
             switch key.wireType {
             case .varint:
-                let payloadByteRange = try buffer.readVarint()
+                let payloadByteRange = try buffer.skipVarint()
                 self._mapVarint[key] = payloadByteRange
                 
             case .bit32:
@@ -73,7 +73,7 @@ extension ProtobufDecoder {
                     throw ProtobufDeccodingError.corruptedData("varint decode: `lengthDelimited.length` is 0")
                 }
                 
-                let lengthDelimitedByteRange = try buffer.readBytes(count: lengthDelimitedCount)
+                let lengthDelimitedByteRange = try buffer.skipBytes(count: lengthDelimitedCount)
                 self._mapLengthDelimited[key] = lengthDelimitedByteRange
                 
             case .unknow:

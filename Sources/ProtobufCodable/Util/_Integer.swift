@@ -81,6 +81,41 @@ extension _Integer {
 
 extension _Integer {
     
+    /// Returns the next power of two unless that would overflow, in which case UInt32.max (on 64-bit systems) or
+    /// Int32.max (on 32-bit systems) is returned. The returned value is always safe to be cast to Int and passed
+    /// to malloc on all platforms.
+    static func nextPowerOf2ClampedToUInt32Max(_ value: UInt32) -> UInt32 {
+        guard value > 0 else {
+            return 1
+        }
+
+        var n = value
+
+        #if arch(arm) || arch(i386)
+        // on 32-bit platforms we can't make use of a whole UInt32.max (as it doesn't fit in an Int)
+        let max = UInt32(Int.max)
+        #else
+        // on 64-bit platforms we're good
+        let max = UInt32.max
+        #endif
+
+        n -= 1
+        n |= n >> 1
+        n |= n >> 2
+        n |= n >> 4
+        n |= n >> 8
+        n |= n >> 16
+        if n != max {
+            n += 1
+        }
+
+        return n
+    }
+}
+
+
+extension _Integer {
+    
     /// get bit at index
     @inlinable
     static func bit<T>(_ value: T, at index: Int) -> Bool

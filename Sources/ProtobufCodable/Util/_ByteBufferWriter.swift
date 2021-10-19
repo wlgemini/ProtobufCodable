@@ -9,9 +9,9 @@ final class _ByteBufferWriter {
     var count: Int { self._pointer.count }
     
     /// Allocate memory but not initialize
-    init(with capacity: Int) {
+    init() {
         self._index = 0
-        self._pointer = UnsafeMutableBufferPointer<UInt8>.allocate(capacity: capacity)
+        self._pointer = Self._malloc(capacity: _Integer.nextPowerOf2ClampedToUInt32Max(0))
     }
     
     deinit {
@@ -20,81 +20,80 @@ final class _ByteBufferWriter {
     
     // MARK: Private
     private var _index: Int
-    private var _pointer: UnsafeMutableBufferPointer<UInt8>
+    private var _pointer: UnsafeMutableRawBufferPointer
+    
+    private static func _malloc(capacity: UInt32) -> UnsafeMutableRawBufferPointer {
+        return UnsafeMutableRawBufferPointer.allocate(byteCount: Int(capacity), alignment: 1)
+    }
+    
+    private func _realloc() {
+        let oldCapacity = UInt32(self._pointer.count)
+        let newCapacity = _Integer.nextPowerOf2ClampedToUInt32Max(oldCapacity)
+        assert(newCapacity > oldCapacity, "can not alloc more memory")
+        
+        let newPointer = Self._malloc(capacity: newCapacity)
+        newPointer.copyMemory(from: UnsafeRawBufferPointer(self._pointer))
+        self._pointer.deallocate()
+        self._pointer = newPointer
+    }
 }
 
 extension _ByteBufferWriter {
     
     @inlinable
-    func getByte(at index: Int) throws -> UInt8 {
-        guard index < self._pointer.count else {
-            throw ProtobufDeccodingError.corruptedData("index out of bounds")
-        }
-        
+    func getByte(at index: Int) -> UInt8 {
         let byte: UInt8 = self._pointer[index]
         return byte
     }
-    
-    @inlinable
-    func setByte(_ value: UInt8, at index: Int) throws {
-        guard index < self._pointer.count else {
-            throw ProtobufDeccodingError.corruptedData("index out of bounds")
-        }
-        
-        self._pointer[index] = value
-    }
 }
 
 extension _ByteBufferWriter {
     
+    
+    @discardableResult
     @inlinable
-    func writeByte(_ value: UInt8) throws {
-        try self.setByte(value, at: self._index)
+    /// write byte
+    /// - Parameter value: byte
+    /// - Returns: write index
+    func writeByte(_ value: UInt8) -> Int {
+        let index = self._index
+        if index < self._pointer.count {
+            self._pointer[index] = value
+        } else {
+            self._realloc()
+            self._pointer[index] = value
+        }
         self._index += 1
+        return index
     }
 
-    /// using little-endian representation
-    func writeFixedWidthInteger<T>(_ value: T) throws -> Range<Int>
+    /// formed as little-endian representation
+    func writeFixedWidthInteger<T>(_ value: T) -> Range<Int>
     where T: FixedWidthInteger {
+        let valueByteCount = _Integer.bit2ByteScalar(T.bitWidth)
+        self._pointer.storeBytes(of: value.littleEndian, toByteOffset: self._index, as: T.self)
+        
         let lowerBound: Int = self._index
-        let valueBitCount = T.bitWidth
-        let valueByteCount = _Integer.bit2ByteScalar(valueBitCount)
-        guard (lowerBound + valueByteCount) < self._pointer.count else {
-            throw ProtobufDeccodingError.corruptedData("index out of bounds")
-        }
-        
-        var bitIndex: Int = 0
-        var byteIndex: Int = lowerBound
-        while bitIndex < valueBitCount {
-            let byte = _Integer.byte(value, at: bitIndex)
-            self._pointer[byteIndex] = byte
-            
-            bitIndex += 8
-            byteIndex += 1
-        }
-        
-        self._index = byteIndex
-        
-        // returns
+        self._index += valueByteCount
         let upperBound = self._index
         let readRange = lowerBound ..< upperBound
         return readRange
     }
 
     @discardableResult
-    func writeVarint<T>(_ value: T) throws -> Range<Int>
+    func writeVarint<T>(_ value: T) -> Range<Int>
     where T: FixedWidthInteger {
-        let lowerBound: Int = self._index
-        
         // find the Leading Non-zero Bit Index
         let lnbIndex: Int = _Integer.leadingNonZeroBitIndex(value)
         guard lnbIndex >= 0 else {
             // write one byte for 0
-            try self.writeByte(0)
+            let lowerBound = self.writeByte(0)
             let upperBound = self._index
             let readRange = lowerBound ..< upperBound
             return readRange
         }
+        
+        let lowerBound = self._index
         
         // Leading Non-zero Bit Count
         let lnbCount: Int = lnbIndex + 1
@@ -102,16 +101,17 @@ extension _ByteBufferWriter {
         // set varint flag
         var bitIndex: Int = 0
         while bitIndex < lnbCount {
-            var bit8: Byte = _Integer.byte(value, at: bitIndex)
+            var bit8: UInt8 = _Integer.byte(value, at: bitIndex)
             bit8 = _Integer.bitTrue(bit8, at: 7)
-            try self.writeByte(bit8)
+            self.writeByte(bit8)
             bitIndex += 7
         }
         
         // set last varint flag
-        var bit8: UInt8 = try self.getByte(at: self._index - 1)
+        let prevIndex = self._index - 1
+        var bit8: UInt8 = self.getByte(at: prevIndex)
         bit8 = _Integer.bitFalse(bit8, at: 7)
-        try self.setByte(bit8, at: self._index - 1)
+        self._pointer[prevIndex] = bit8
         
         // return
         let upperBound = self._index
@@ -119,4 +119,3 @@ extension _ByteBufferWriter {
         return readRange
     }
 }
-

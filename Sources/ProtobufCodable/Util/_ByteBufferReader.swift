@@ -2,6 +2,8 @@
 
 final class _ByteBufferReader {
     
+    typealias Returns<Value> = (readRang: Range<Int>, value: Value)
+    
     @inlinable
     var index: Int { self._index }
     
@@ -12,8 +14,8 @@ final class _ByteBufferReader {
     init<S>(from source: S) throws
     where S: Collection, S.Element == UInt8 {
         self._index = 0
-        self._pointer = UnsafeMutableBufferPointer<UInt8>.allocate(capacity: source.count)
-        _ = self._pointer.initialize(from: source)
+        self._pointer = UnsafeMutableRawBufferPointer.allocate(byteCount: source.count, alignment: 1)
+        self._pointer.copyBytes(from: source)
     }
     
     deinit {
@@ -22,77 +24,28 @@ final class _ByteBufferReader {
     
     // MARK: Private
     private var _index: Int
-    private var _pointer: UnsafeMutableBufferPointer<UInt8>
+    private var _pointer: UnsafeMutableRawBufferPointer
 }
 
 extension _ByteBufferReader {
     
-    @inlinable
-    func getByte(at index: Int) throws -> UInt8 {
-        guard index < self._pointer.count else {
+    func skipBytes(count: Int) throws -> Range<Int> {
+        let lowerBound: Int = self._index
+        let upperBound: Int = lowerBound + count
+        guard upperBound <= self._pointer.count else {
             throw ProtobufDeccodingError.corruptedData("index out of bounds")
         }
         
-        let byte: UInt8 = self._pointer[index]
-        return byte
-    }
-}
-
-extension _ByteBufferReader {
-    
-    @inlinable
-    func readByte() throws -> UInt8 {
-        let byte: UInt8 = try self.getByte(at: self._index)
-        self._index += 1
-        return byte
-    }
-
-    @inlinable
-    func readBytes(count: Int) throws -> Range<Int> {
-        guard self._index + count < self._pointer.count else {
-            throw ProtobufDeccodingError.corruptedData("index out of bounds")
-        }
-        let lowerBound: Int = self._index
-        self._index += count
-        let upperBound = self._index
+        self._index = upperBound
         let readRange = lowerBound ..< upperBound
         return readRange
     }
     
-    /// using little-endian representation
-    func readFixedWidthInteger<T>(_ type: T.Type) throws -> (readRange: Range<Int>, value: T)
-    where T: FixedWidthInteger {
-        let lowerBound: Int = self._index
-        let valueBitCount = T.bitWidth
-        let valueByteCount = _Integer.bit2ByteScalar(valueBitCount)
-        guard (lowerBound + valueByteCount) < self._pointer.count else {
-            throw ProtobufDeccodingError.corruptedData("index out of bounds")
-        }
-        
-        var value: T = 0b0000_0000
-        var bitIndex: Int = 0
-        var byteIndex: Int = lowerBound
-        while bitIndex < valueBitCount {
-            let byte = self._pointer[byteIndex]
-            value |= T(byte) << bitIndex
-            
-            bitIndex += 8
-            byteIndex += 1
-        }
-        
-        self._index = byteIndex
-        
-        // returns
-        let upperBound = self._index
-        let readRange = lowerBound ..< upperBound
-        return (readRange, value)
-    }
-    
-    func readVarint() throws -> Range<Int> {
+    func skipVarint() throws -> Range<Int> {
         let lowerBound: Int = self._index
         
         while true {
-            let byte = try self.readByte()
+            let (_, byte) = try self.readByte()
             if (byte & 0b1000_0000) != 0b1000_0000 {
                 break
             }
@@ -102,6 +55,37 @@ extension _ByteBufferReader {
         let upperBound = self._index
         let readRange = lowerBound ..< upperBound
         return readRange
+    }
+}
+
+extension _ByteBufferReader {
+    
+    @inlinable
+    func readByte() throws -> (readIndex: Int, value: UInt8) {
+        guard self._index < self._pointer.count else {
+            throw ProtobufDeccodingError.corruptedData("index out of bounds")
+        }
+        
+        let readIndex: Int = self._index
+        let value: UInt8 = self._pointer[readIndex]
+        self._index += 1
+        return (readIndex, value)
+    }
+    
+    /// formed as little-endian representation
+    func readFixedWidthInteger<T>(_ type: T.Type) throws -> (readRange: Range<Int>, value: T)
+    where T: FixedWidthInteger {
+        let lowerBound: Int = self._index
+        let valueByteCount = _Integer.bit2ByteScalar(T.bitWidth)
+        let upperBound: Int = lowerBound + valueByteCount
+        guard upperBound <= self._pointer.count else {
+            throw ProtobufDeccodingError.corruptedData("index out of bounds")
+        }
+        
+        let value: T = self._pointer.load(fromByteOffset: self._index, as: T.self)
+        self._index = upperBound
+        let readRange = lowerBound ..< upperBound
+        return (readRange, value)
     }
     
     func readVarint<T>(_ type: T.Type) throws -> (readRange: Range<Int>, isTruncating: Bool, value: T)
@@ -115,7 +99,7 @@ extension _ByteBufferReader {
         var hasVarintFlagBit: Bool = false
         while true {
             // read a varint byte
-            let varintByte: UInt8 = try self.readByte()
+            let (_, varintByte) = try self.readByte()
             
             // value update
             let byte: UInt8 = varintByte & 0b0111_1111
