@@ -27,7 +27,7 @@ enum _WireType: UInt8 {
     ///
     /// A wire type of 2 (length-delimited) means that the value is a varint encoded length followed by the specified number of bytes of data.
     ///
-    /// [Varint Key][Varint Length][Bytes]
+    /// <Varint Key><Varint Length><`Bytes`|`String`|`Embedded message`|`Packed repeated fields`>
     ///
     /// - `Bytes`: `[UInt8]`, using raw bytes order.
     /// - `String` `String`, are encoded to `Bytes` using `.utf8` in `little-endian` bytes order. (which is `String.utf8` encoding default behaviour)
