@@ -32,7 +32,7 @@ enum _WireType: UInt8 {
     /// - `Bytes`: `[UInt8]`, using raw bytes order.
     /// - `String` `String`, are encoded to `Bytes` using `.utf8` in `little-endian` bytes order. (which is `String.utf8` encoding default behaviour)
     /// - `Embedded message`: `Model` are encoded it's key-value pairs to `Bytes` without using `startGroup`/`endGroup` barrier.
-    /// - `Packed repeated fields`: marked as `repeated`, it's just an `Array<Type>`. (In `proto3`, `repeated` fields of scalar numeric types use packed encoding by default.)
+    /// - `Packed repeated fields`: marked as `repeated`, it's just an `Array<Type>`. (In `proto3`, `repeated` fields of scalar numeric types use `packed` encoding by default, A `packed repeated` field containing zero elements does not appear in the encoded message.)
     ///
     case lengthDelimited = 2 /* 0b0010 */
     

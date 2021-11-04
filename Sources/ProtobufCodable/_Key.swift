@@ -16,16 +16,19 @@ struct _Key {
     ///
     let fieldNumber: UInt32
     let wireType: _WireType
+    let rawValue: UInt32
 
     init(rawValue: UInt32) {
         let wireRaw = UInt8(rawValue & _WireType.bitMask)
         self.wireType = _WireType(rawValue: wireRaw) ?? .unknow
         self.fieldNumber = rawValue >> _WireType.bitMaskCount
+        self.rawValue = rawValue
     }
     
     init(fieldNumber: UInt32, wireType: _WireType) {
         self.fieldNumber = fieldNumber
         self.wireType = wireType
+        self.rawValue = (fieldNumber << _WireType.bitMaskCount) | UInt32(wireType.rawValue)
     }
 }
 
