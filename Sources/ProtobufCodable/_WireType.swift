@@ -1,7 +1,7 @@
 
 
 /// Wire Type
-enum _WireType: UInt8 {
+public enum WireType: UInt8 {
     
     /// Use for: int32, int64, uint32, uint64, sint32, sint64, bool, enum
     ///
@@ -42,7 +42,7 @@ enum _WireType: UInt8 {
 }
 
 
-extension _WireType {
+extension WireType {
     
     static var bitMask: UInt32 { 0b0000_0111 }
     

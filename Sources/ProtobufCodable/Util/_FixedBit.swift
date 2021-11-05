@@ -4,10 +4,10 @@ enum _FixedBit {}
 
 extension _FixedBit {
     
-    static func encode<T>(_ value: T) -> UnsafeMutableBufferPointer<Byte>
+    static func encode<T>(_ value: T) -> UnsafeMutableBufferPointer<UInt8>
     where T: FixedWidthInteger, T: UnsignedInteger {
         let bitCount = value.bitWidth
-        let mutablePointer = UnsafeMutableBufferPointer<Byte>.allocate(capacity: _Integer.bit2ByteScalar(bitCount))
+        let mutablePointer = UnsafeMutableBufferPointer<UInt8>.allocate(capacity: _Integer.bit2ByteScalar(bitCount))
         mutablePointer.initialize(repeating: 0)
         
         var bitIndex: Int = 0
@@ -26,7 +26,7 @@ extension _FixedBit {
 
 extension _FixedBit {
     
-    static func decode<T>(_ pointer: UnsafeBufferPointer<Byte>, from byteIndex: Int) -> T
+    static func decode<T>(_ pointer: UnsafeBufferPointer<UInt8>, from byteIndex: Int) -> T
     where T: FixedWidthInteger, T: UnsignedInteger {
         var value: T = 0b0000_0000
         let bitCount: Int = T.bitWidth

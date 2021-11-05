@@ -17,8 +17,8 @@ public final class ProtobufEncoder {
     
     // MARK: Internal
     var _byteBufferReader: _ByteBufferReader?
-    var _mapVarint: [_Key: Range<Int>] = [:]
-    var _mapBit32: [_Key: (Range<Int>, UInt32)] = [:]
-    var _mapBit64: [_Key: (Range<Int>, UInt64)] = [:]
-    var _mapLengthDelimited: [_Key: Range<Int>] = [:]
+    var _mapVarint: [Key: Range<Int>] = [:]
+    var _mapBit32: [Key: (Range<Int>, UInt32)] = [:]
+    var _mapBit64: [Key: (Range<Int>, UInt64)] = [:]
+    var _mapLengthDelimited: [Key: Range<Int>] = [:]
 }
