@@ -3,7 +3,7 @@
 @propertyWrapper
 final class String {
     
-    public let fieldNumber: UInt32
+    public let fieldNumber: Swift.UInt32
     
     public var rawValue: Swift.String?
     
@@ -12,7 +12,15 @@ final class String {
         set { self.rawValue = newValue }
     }
     
-    public init(_ fieldNumber: UInt32) {
+    public init(_ fieldNumber: Swift.UInt32) {
         self.fieldNumber = fieldNumber
+    }
+}
+
+
+extension String: _DecodingKey {
+    
+    func decode(from reader: _ByteBufferReader) throws {
+        #warning("Not impl")
     }
 }

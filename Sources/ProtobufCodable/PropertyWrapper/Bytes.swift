@@ -3,7 +3,7 @@
 @propertyWrapper
 final class Bytes {
     
-    public let fieldNumber: UInt32
+    public let fieldNumber: Swift.UInt32
     
     public var rawValue: [Swift.UInt8]?
     
@@ -12,7 +12,15 @@ final class Bytes {
         set { self.rawValue = newValue }
     }
     
-    public init(_ fieldNumber: UInt32) {
+    public init(_ fieldNumber: Swift.UInt32) {
         self.fieldNumber = fieldNumber
+    }
+}
+
+
+extension Bytes: _DecodingKey {
+    
+    func decode(from reader: _ByteBufferReader) throws {
+        #warning("Not impl")
     }
 }

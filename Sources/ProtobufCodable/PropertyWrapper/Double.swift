@@ -2,7 +2,7 @@
 @propertyWrapper
 final class Double {
     
-    public let fieldNumber: UInt32
+    public let fieldNumber: Swift.UInt32
     
     public var rawValue: Swift.Double?
     
@@ -11,7 +11,16 @@ final class Double {
         set { self.rawValue = newValue }
     }
     
-    public init(_ fieldNumber: UInt32) {
+    public init(_ fieldNumber: Swift.UInt32) {
         self.fieldNumber = fieldNumber
+    }
+}
+
+
+extension Double: _DecodingKey {
+    
+    func decode(from reader: _ByteBufferReader) throws {
+        guard let bits = reader.mapBit64[self.fieldNumber] else { return }
+        self.rawValue = Swift.Double(bitPattern: bits)
     }
 }

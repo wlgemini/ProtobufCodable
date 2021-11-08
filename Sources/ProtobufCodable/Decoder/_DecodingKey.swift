@@ -1,5 +1,5 @@
 
 protocol _DecodingKey: AnyObject {
     
-    func decode(from decoder: ProtobufDecoder) throws
+    func decode(from reader: _ByteBufferReader) throws
 }

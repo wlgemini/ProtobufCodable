@@ -2,7 +2,7 @@
 @propertyWrapper
 final class Float {
     
-    public let fieldNumber: UInt32
+    public let fieldNumber: Swift.UInt32
     
     public var rawValue: Swift.Float?
     
@@ -11,7 +11,16 @@ final class Float {
         set { self.rawValue = newValue }
     }
     
-    public init(_ fieldNumber: UInt32) {
+    public init(_ fieldNumber: Swift.UInt32) {
         self.fieldNumber = fieldNumber
+    }
+}
+
+
+extension Float: _DecodingKey {
+    
+    func decode(from reader: _ByteBufferReader) throws {
+        guard let bits = reader.mapBit32[self.fieldNumber] else { return }
+        self.rawValue = Swift.Float(bitPattern: bits)
     }
 }

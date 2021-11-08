@@ -10,12 +10,12 @@ public protocol ProtobufDecodable: Decodable, AnyObject {
 
 extension ProtobufDecodable {
     
-    static func _decode(from decoder: ProtobufDecoder) throws -> Self {
+    static func _decode(from reader: _ByteBufferReader) throws -> Self {
         let value = Self.init()
-        let mirror = Mirror(reflecting: value)
+        let mirror = Swift.Mirror(reflecting: value)
         for child in mirror.children {
             guard let decodingKey = child.value as? _DecodingKey else { continue }
-            try decodingKey.decode(from: decoder)
+            try decodingKey.decode(from: reader)
         }
         return value
     }

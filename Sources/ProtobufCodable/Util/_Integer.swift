@@ -8,8 +8,8 @@ extension _Integer {
     /// `SignedInteger` has a sign bit, so it's not approperate for this calculation.
     /// (same as `mostSignificantBitIndex`)
     @inlinable
-    static func leadingNonZeroBitIndex<T>(_ value: T) -> Int
-    where T: FixedWidthInteger {
+    static func leadingNonZeroBitIndex<T>(_ value: T) -> Swift.Int
+    where T: Swift.FixedWidthInteger {
         value.bitWidth - value.leadingZeroBitCount - 1
     }
     
@@ -37,8 +37,8 @@ extension _Integer {
     /// `SignedInteger` has a sign bit, so it's not approperate for this calculation.
     /// (same as `mostSignificantBitIndex`)
     @inlinable
-    static func leadingNonZeroBitCount<T>(_ value: T) -> Int
-    where T: FixedWidthInteger {
+    static func leadingNonZeroBitCount<T>(_ value: T) -> Swift.Int
+    where T: Swift.FixedWidthInteger {
         value.bitWidth - value.leadingZeroBitCount
     }
 }
@@ -48,7 +48,7 @@ extension _Integer {
     
     @inlinable
     static func bit2ByteScalar<T>(_ value: T) -> T
-    where T: BinaryInteger {
+    where T: Swift.BinaryInteger {
         if (value & 0b0000_0111) == 0 {
             return value >> 3 // 没有余数
         } else {
@@ -58,7 +58,7 @@ extension _Integer {
     
     @inlinable
     static func byte2BitScalar<T>(_ value: T) -> T
-    where T: FixedWidthInteger {
+    where T: Swift.FixedWidthInteger {
         value << 3
     }
 }
@@ -70,11 +70,11 @@ extension _Integer {
     /// - Parameter index: bit index
     /// - Returns: a byte
     @inlinable
-    static func byte<T>(_ value: T, at index: Int) -> UInt8
-    where T: BinaryInteger {
+    static func byte<T>(_ value: T, at index: Int) -> Swift.UInt8
+    where T: Swift.BinaryInteger {
         assert(value.bitWidth > index)
         
-        return UInt8((value >> index) & 0b1111_1111)
+        return Swift.UInt8((value >> index) & 0b1111_1111)
     }
 }
 
@@ -84,7 +84,7 @@ extension _Integer {
     /// Returns the next power of two unless that would overflow, in which case UInt32.max (on 64-bit systems) or
     /// Int32.max (on 32-bit systems) is returned. The returned value is always safe to be cast to Int and passed
     /// to malloc on all platforms.
-    static func nextPowerOf2ClampedToUInt32Max(_ value: UInt32) -> UInt32 {
+    static func nextPowerOf2ClampedToUInt32Max(_ value: Swift.UInt32) -> Swift.UInt32 {
         guard value > 0 else {
             return 1
         }
@@ -93,10 +93,10 @@ extension _Integer {
 
         #if arch(arm) || arch(i386)
         // on 32-bit platforms we can't make use of a whole UInt32.max (as it doesn't fit in an Int)
-        let max = UInt32(Int.max)
+        let max = Swift.UInt32(Int.max)
         #else
         // on 64-bit platforms we're good
-        let max = UInt32.max
+        let max = Swift.UInt32.max
         #endif
 
         n -= 1
@@ -118,8 +118,8 @@ extension _Integer {
     
     /// get bit at index
     @inlinable
-    static func bit<T>(_ value: T, at index: Int) -> Bool
-    where T: BinaryInteger {
+    static func bit<T>(_ value: T, at index: Swift.Int) -> Swift.Bool
+    where T: Swift.BinaryInteger {
         assert(value.bitWidth > index)
         
         let mask: T = 0b0000_0001 << index
@@ -128,8 +128,8 @@ extension _Integer {
     
     /// set bit true at index
     @inlinable
-    static func bitTrue<T>(_ value: T, at index: Int) -> T
-    where T: BinaryInteger {
+    static func bitTrue<T>(_ value: T, at index: Swift.Int) -> T
+    where T: Swift.BinaryInteger {
         assert(value.bitWidth > index)
         
         let mask: T = 0b0000_0001 << index
@@ -138,8 +138,8 @@ extension _Integer {
     
     /// set bit false at index
     @inlinable
-    static func bitFalse<T>(_ value: T, at index: Int) -> T
-    where T: BinaryInteger {
+    static func bitFalse<T>(_ value: T, at index: Swift.Int) -> T
+    where T: Swift.BinaryInteger {
         assert(value.bitWidth > index)
 
         let mask: T = ~(0b0000_0001 << index)
@@ -148,8 +148,8 @@ extension _Integer {
     
     /// toggle bit at index
     @inlinable
-    static func bitToggle<T>(_ value: T, at index: Int) -> T
-    where T: BinaryInteger {
+    static func bitToggle<T>(_ value: T, at index: Swift.Int) -> T
+    where T: Swift.BinaryInteger {
         assert(value.bitWidth > index)
         
         let mask: T = 0b0000_0001 << index
@@ -161,24 +161,43 @@ extension _Integer {
 
 extension _Integer {
     
-    static func varintByteCount<T>(for value: T) -> Int
-    where T: FixedWidthInteger {
-        let lnbIndex: Int = _Integer.leadingNonZeroBitIndex(value)
-        let lnbCount: Int = _Integer.leadingNonZeroBitCount(value)
-        let varintFlagBitCount: Int = (lnbIndex / 7) + 1 // every 7 bit need a varint flag
-        let varintBitCount: Int = lnbCount + varintFlagBitCount
-        let varintByteCount: Int = _Integer.bit2ByteScalar(varintBitCount)
+    static func varintByteCount<T>(for value: T) -> Swift.Int
+    where T: Swift.FixedWidthInteger {
+        let lnbIndex: Swift.Int = _Integer.leadingNonZeroBitIndex(value)
+        let lnbCount: Swift.Int = _Integer.leadingNonZeroBitCount(value)
+        let varintFlagBitCount: Swift.Int = (lnbIndex / 7) + 1 // every 7 bit need a varint flag
+        let varintBitCount: Swift.Int = lnbCount + varintFlagBitCount
+        let varintByteCount: Swift.Int = _Integer.bit2ByteScalar(varintBitCount)
         return varintByteCount
     }
 }
 
 
+extension _Integer {
+    
+    @inlinable
+    static func zigZagEncode<Signed, Unsigned>(_ value: Signed) -> Unsigned
+    where Signed: SignedInteger, Unsigned: UnsignedInteger {
+        let ls: Signed = value << 1
+        let rs: Signed = value >> (value.bitWidth - 1)
+        return Unsigned(rs ^ ls)
+    }
+    
+    @inlinable
+    static func zigZagDecode<Unsigned, Signed>(_ value: Unsigned) -> Signed
+    where Unsigned: UnsignedInteger, Signed: SignedInteger {
+        let ls: Signed = -Signed(value & 1)
+        let rs: Signed = Signed(value >> 1)
+        return Signed(ls ^ rs)
+    }
+}
+
 
 extension _Integer {
     
-    static func description<T>(_ value: T) -> String
-    where T: BinaryInteger {
-        var binaryString: String = ""
+    static func description<T>(_ value: T) -> Swift.String
+    where T: Swift.BinaryInteger {
+        var binaryString: Swift.String = ""
         withUnsafeBytes(of: self) { bufferPointer in
             for byte in bufferPointer {
                 let b0 = (byte & 0b0000_0001) == 0 ? "0" : "1"

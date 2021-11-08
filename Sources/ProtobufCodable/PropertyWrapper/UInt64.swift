@@ -16,3 +16,12 @@ final class UInt64 {
         self.fieldNumber = fieldNumber
     }
 }
+
+
+extension UInt64: _DecodingKey {
+    
+    func decode(from reader: _ByteBufferReader) throws {
+        guard let bits = reader.mapVarint[self.fieldNumber] else { return }
+        self.rawValue = bits
+    }
+}

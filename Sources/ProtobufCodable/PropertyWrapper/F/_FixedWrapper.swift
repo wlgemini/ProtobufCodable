@@ -2,7 +2,7 @@
 @propertyWrapper
 public final class _FixedWrapper<S: ScalarType> {
     
-    public let fieldNumber: UInt32
+    public let fieldNumber: Swift.UInt32
     
     public var rawValue: S.T?
     
@@ -11,7 +11,7 @@ public final class _FixedWrapper<S: ScalarType> {
         set { self.rawValue = newValue }
     }
     
-    public init(_ fieldNumber: UInt32) {
+    public init(_ fieldNumber: Swift.UInt32) {
         self.fieldNumber = fieldNumber
     }
 }
