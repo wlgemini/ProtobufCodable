@@ -1,6 +1,10 @@
+import Foundation
 
 
 final class _ByteBufferReader {
+    
+    // MARK: Private
+    let data: Data
     
     /// [fieldNumber: int32|int64|uint32|uint64|sint32|sint64|bool|enum]
     private(set) var mapVarint: [Swift.UInt32: Swift.UInt64] = [:]
@@ -14,18 +18,17 @@ final class _ByteBufferReader {
     /// [fieldNumber: Bytes|String|Model|Packed Repeated Scalar Value's Ranges]
     private(set) var mapLengthDelimited: [Swift.UInt32: [Swift.Range<Swift.Int>]] = [:]
     
-    /// Allocate memory and copy from source
-    init<C>(from collection: C, in range: Swift.Range<Swift.Int>) throws
-    where C: Swift.RandomAccessCollection, C.Index == Swift.Int, C.Element == Swift.UInt8 {
+    /// init
+    init(from data: Foundation.Data, in range: Swift.Range<Swift.Int>) throws {
         // save
-        assert(range.upperBound <= collection.count, "Range is out of bounds")
-        self._collection = AnyCollection<C.Element>(collection)
+        assert(range.upperBound <= data.count, "Range is out of bounds")
+        self.data = data
         
         // read
         var index: Swift.Int = 0
         while (range.lowerBound + index) < range.upperBound {
             // keyVarintDecode
-            let (keyReadRange, keyIsTruncating, keyValue) = Self.readVarint(valueType: Swift.UInt32.self, fromIndex: index, collection: collection)
+            let (keyReadRange, keyIsTruncating, keyValue) = Self.readVarint(valueType: Swift.UInt32.self, fromIndex: index, data: data)
             index = keyReadRange.upperBound
             if keyIsTruncating {
                 // must not truncating `key`
@@ -39,7 +42,7 @@ final class _ByteBufferReader {
             switch key.wireType {
             case .varint:
                 // read varint as biggest `UInt64`
-                let (payloadReadRange, payloadIsTruncating, payloadValue) = Self.readVarint(valueType: Swift.UInt64.self, fromIndex: index, collection: collection)
+                let (payloadReadRange, payloadIsTruncating, payloadValue) = Self.readVarint(valueType: Swift.UInt64.self, fromIndex: index, data: data)
                 
                 if payloadIsTruncating {
                     // must not truncating `key`
@@ -53,7 +56,7 @@ final class _ByteBufferReader {
                 self.mapVarint[key.fieldNumber] = payloadValue
                 
             case .bit32:
-                let (bit32ReadRange, bit32Value) = Self.readFixedWidthInteger(valueType: Swift.UInt32.self, fromIndex: index, collection: collection)
+                let (bit32ReadRange, bit32Value) = Self.readFixedWidthInteger(valueType: Swift.UInt32.self, fromIndex: index, data: data)
                 
                 // next key index
                 index = bit32ReadRange.upperBound
@@ -62,7 +65,7 @@ final class _ByteBufferReader {
                 self.mapBit32[key.fieldNumber] = bit32Value
                 
             case .bit64:
-                let (bit64ReadRange, bit64Value) = Self.readFixedWidthInteger(valueType: Swift.UInt64.self, fromIndex: index, collection: collection)
+                let (bit64ReadRange, bit64Value) = Self.readFixedWidthInteger(valueType: Swift.UInt64.self, fromIndex: index, data: data)
                 
                 // next key index
                 index = bit64ReadRange.upperBound
@@ -71,7 +74,7 @@ final class _ByteBufferReader {
                 self.mapBit64[key.fieldNumber] = bit64Value
                 
             case .lengthDelimited:
-                let (lengthDelimitedReadRange, lengthDelimitedIsTruncating, lengthDelimitedValue) = Self.readVarint(valueType: Swift.UInt32.self, fromIndex: index, collection: collection)
+                let (lengthDelimitedReadRange, lengthDelimitedIsTruncating, lengthDelimitedValue) = Self.readVarint(valueType: Swift.UInt32.self, fromIndex: index, data: data)
                 
                 if lengthDelimitedIsTruncating {
                     throw ProtobufDeccodingError.corruptedData("varint decode: `lengthDelimited.length` truncated")
@@ -99,17 +102,14 @@ final class _ByteBufferReader {
             }
         }
     }
-    
-    // MARK: Private
-    private let _collection: AnyCollection<UInt8>
 }
 
 
 extension _ByteBufferReader {
     
     /// formed as little-endian representation
-    static func readFixedWidthInteger<V, C>(valueType: V.Type, fromIndex: Swift.Int, collection: C) -> (readRange: Swift.Range<Swift.Int>, value: V)
-    where V: Swift.FixedWidthInteger, C: RandomAccessCollection, C.Index == Swift.Int, C.Element == Swift.UInt8 {
+    static func readFixedWidthInteger<V>(valueType: V.Type, fromIndex: Swift.Int, data: Foundation.Data) -> (readRange: Swift.Range<Swift.Int>, value: V)
+    where V: Swift.FixedWidthInteger {
         let lowerBound: Swift.Int = fromIndex
         
         var index = fromIndex
@@ -117,11 +117,11 @@ extension _ByteBufferReader {
         let bitCount: Int = V.bitWidth
         var bitIndex: Int = 0
         while bitIndex < bitCount {
-            /* using `RandomAccessCollection` to ensure O(1) complexity*/
-            assert(index < collection.count, "Index out of bounds")
+            /* using `Data: RandomAccessCollection` to ensure O(1) complexity*/
+            assert(index < data.count, "Index out of bounds")
             
             // read a byte
-            let byte = collection[index]
+            let byte = data[index]
             
             // value update
             value |= V(byte) << bitIndex
@@ -137,8 +137,8 @@ extension _ByteBufferReader {
     }
     
     
-    static func readVarint<V, C>(valueType: V.Type, fromIndex: Swift.Int, collection: C) -> (readRange: Swift.Range<Swift.Int>, isTruncating: Swift.Bool, value: V)
-    where V: Swift.FixedWidthInteger, C: RandomAccessCollection, C.Index == Swift.Int, C.Element == Swift.UInt8 {
+    static func readVarint<V>(valueType: V.Type, fromIndex: Swift.Int, data: Foundation.Data) -> (readRange: Swift.Range<Swift.Int>, isTruncating: Swift.Bool, value: V)
+    where V: Swift.FixedWidthInteger {
         let lowerBound: Swift.Int = fromIndex
         
         var index = fromIndex
@@ -148,11 +148,11 @@ extension _ByteBufferReader {
         let bitCount: Swift.Int64 = Swift.Int64(V.bitWidth)
         var hasVarintFlagBit: Swift.Bool = false
         while true {
-            /* using `RandomAccessCollection` to ensure O(1) complexity*/
-            assert(index < collection.count, "Index out of bounds")
+            /* using `Data: RandomAccessCollection` to ensure O(1) complexity*/
+            assert(index < data.count, "Index out of bounds")
             
             // read a varint byte
-            let varintByte: Swift.UInt8 = collection[index]
+            let varintByte: Swift.UInt8 = data[index]
             index += 1
             
             // value update
