@@ -121,9 +121,7 @@ extension _Integer {
     static func bit<T>(_ value: T, at index: Swift.Int) -> Swift.Bool
     where T: Swift.BinaryInteger {
         assert(value.bitWidth > index)
-        
-        let mask: T = 0b0000_0001 << index
-        return (value & mask) > 0 ? true : false
+        return (value >> index) == 0b0000_0001 ? true : false
     }
     
     /// set bit true at index
@@ -175,20 +173,28 @@ extension _Integer {
 
 extension _Integer {
     
+    /// Return a 32-bit ZigZag-encoded value.
     @inlinable
-    static func zigZagEncode<Signed, Unsigned>(_ value: Signed) -> Unsigned
-    where Signed: SignedInteger, Unsigned: UnsignedInteger {
-        let ls: Signed = value << 1
-        let rs: Signed = value >> (value.bitWidth - 1)
-        return Unsigned(rs ^ ls)
+    static func zigZagEncoded(_ value: Swift.Int32) -> Swift.UInt32 {
+        return Swift.UInt32(bitPattern: (value << 1) ^ (value >> 31))
     }
-    
+
+    /// Return a 64-bit ZigZag-encoded value.
     @inlinable
-    static func zigZagDecode<Unsigned, Signed>(_ value: Unsigned) -> Signed
-    where Unsigned: UnsignedInteger, Signed: SignedInteger {
-        let ls: Signed = -Signed(value & 1)
-        let rs: Signed = Signed(value >> 1)
-        return Signed(ls ^ rs)
+    static func zigZagEncoded(_ value: Swift.Int64) -> Swift.UInt64 {
+        return Swift.UInt64(bitPattern: (value << 1) ^ (value >> 63))
+    }
+
+    /// Return a 32-bit ZigZag-decoded value.
+    @inlinable
+    static func zigZagDecoded(_ value: Swift.UInt32) -> Swift.Int32 {
+        return Swift.Int32(bitPattern: value >> 1) ^ -Swift.Int32(bitPattern: value & 1)
+    }
+
+    /// Return a 64-bit ZigZag-decoded value.
+    @inlinable
+    static func zigZagDecoded(_ value: Swift.UInt64) -> Swift.Int64 {
+        return Swift.Int64(bitPattern: value >> 1) ^ -Swift.Int64(bitPattern: value & 1)
     }
 }
 

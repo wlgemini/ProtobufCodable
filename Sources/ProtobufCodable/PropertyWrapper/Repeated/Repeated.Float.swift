@@ -24,7 +24,8 @@ extension Repeated {
 extension Repeated.Float: _DecodingKey {
     
     func decode(from reader: _ByteBufferReader) throws {
-//        guard let bits = reader.mapBit32[self.fieldNumber] else { return }
-//        self.rawValue = Swift.Float(bitPattern: bits)
+        guard let range = reader.mapLengthDelimited[self.fieldNumber]?.first else { return }
+        let values = try _ByteBufferReader.readFixedWidthIntegers(valueType: Swift.UInt32.self, range: range, data: reader.data)
+        self.rawValue = values.map { Swift.Float(bitPattern: $0) }
     }
 }

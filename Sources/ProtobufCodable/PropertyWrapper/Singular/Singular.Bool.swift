@@ -8,7 +8,7 @@ extension Singular {
         
         public let fieldNumber: Swift.UInt32
         
-        public var rawValue: Swift.Bool?
+        public internal(set) var rawValue: Swift.Bool?
         
         public var wrappedValue: Swift.Bool {
             get { self.rawValue ?? false }
@@ -25,6 +25,7 @@ extension Singular {
 extension Singular.Bool: _DecodingKey {
     
     func decode(from reader: _ByteBufferReader) throws {
+        reader.mapVarint.removeValue(forKey: self.fieldNumber)
         guard let bits = reader.mapVarint[self.fieldNumber] else { return }
         self.rawValue = _Integer.bit(bits, at: 0)
     }

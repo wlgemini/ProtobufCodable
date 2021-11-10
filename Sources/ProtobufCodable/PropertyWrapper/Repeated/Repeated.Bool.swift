@@ -25,7 +25,7 @@ extension Repeated {
 extension Repeated.Bool: _DecodingKey {
     
     func decode(from reader: _ByteBufferReader) throws {
-//        guard let bits = reader.mapVarint[self.fieldNumber] else { return }
-//        self.rawValue = _Integer.bit(bits, at: 0)
+        guard let range = reader.mapLengthDelimited[self.fieldNumber]?.first else { return }
+        self.rawValue = range.map { _Integer.bit(reader.data[$0], at: 0) }
     }
 }

@@ -26,7 +26,8 @@ extension Repeated {
 extension Repeated.SFixed32: _DecodingKey {
     
     func decode(from reader: _ByteBufferReader) throws {
-//        guard let bits = reader.mapBit32[self.fieldNumber] else { return }
-//        self.rawValue = _Integer.zigZagDecode(bits)
+        guard let range = reader.mapLengthDelimited[self.fieldNumber]?.first else { return }
+        let values = try _ByteBufferReader.readVarints(valueType: Swift.UInt32.self, range: range, data: reader.data)
+        self.rawValue = values.map { _Integer.zigZagDecoded($0) }
     }
 }

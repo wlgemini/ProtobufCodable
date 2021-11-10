@@ -8,7 +8,7 @@ extension Singular {
         
         public let fieldNumber: Swift.UInt32
         
-        public var rawValue: Swift.Float?
+        public internal(set) var rawValue: Swift.Float?
         
         public var wrappedValue: Swift.Float {
             get { self.rawValue ?? 0 }
@@ -25,7 +25,7 @@ extension Singular {
 extension Singular.Float: _DecodingKey {
     
     func decode(from reader: _ByteBufferReader) throws {
-        guard let bits = reader.mapBit32[self.fieldNumber] else { return }
-        self.rawValue = Swift.Float(bitPattern: bits)
+        guard let bit32 = reader.mapBit32[self.fieldNumber] else { return }
+        self.rawValue = Swift.Float(bitPattern: bit32)
     }
 }

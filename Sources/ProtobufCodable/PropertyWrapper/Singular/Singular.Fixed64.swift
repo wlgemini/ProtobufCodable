@@ -11,7 +11,7 @@ extension Singular {
         
         public let fieldNumber: Swift.UInt32
         
-        public var rawValue: Swift.UInt64?
+        public internal(set) var rawValue: Swift.UInt64?
         
         public var wrappedValue: Swift.UInt64 {
             get { self.rawValue ?? 0 }
@@ -28,7 +28,7 @@ extension Singular {
 extension Singular.Fixed64: _DecodingKey {
     
     func decode(from reader: _ByteBufferReader) throws {
-        guard let bits = reader.mapBit64[self.fieldNumber] else { return }
-        self.rawValue = bits
+        guard let bit64 = reader.mapBit64[self.fieldNumber] else { return }
+        self.rawValue = bit64
     }
 }

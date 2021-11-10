@@ -9,7 +9,7 @@ extension Singular {
         
         public let fieldNumber: Swift.UInt32
         
-        public var rawValue: Swift.String?
+        public internal(set) var rawValue: Swift.String?
         
         public var wrappedValue: Swift.String {
             get { self.rawValue ?? "" }
