@@ -28,6 +28,6 @@ extension Repeated.SFixed64: _DecodingKey {
     func decode(from reader: _ByteBufferReader) throws {
         guard let range = reader.mapLengthDelimited[self.fieldNumber]?.first else { return }
         let values = try _ByteBufferReader.readVarints(valueType: Swift.UInt64.self, range: range, data: reader.data)
-        self.rawValue = values.map { _Integer.zigZagDecode($0) }
+        self.rawValue = values.map { _Integer.zigZagDecoded($0) }
     }
 }

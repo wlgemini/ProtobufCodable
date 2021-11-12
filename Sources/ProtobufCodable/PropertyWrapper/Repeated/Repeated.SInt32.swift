@@ -34,6 +34,6 @@ extension Repeated.SInt32: _DecodingKey {
         
         guard let range = reader.mapLengthDelimited[self.fieldNumber]?.first else { return }
         let values = try _ByteBufferReader.readVarints(valueType: Swift.UInt32.self, range: range, data: reader.data)
-        self.rawValue = values.map { _Integer.zigZagDecode(bit32) }
+        self.rawValue = values.map { _Integer.zigZagDecoded(bit32) }
     }
 }
