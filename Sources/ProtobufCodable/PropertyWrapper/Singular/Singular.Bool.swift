@@ -25,8 +25,12 @@ extension Singular {
 extension Singular.Bool: _DecodingKey {
     
     func decode(from reader: _ByteBufferReader) throws {
-        reader.mapVarint.removeValue(forKey: self.fieldNumber)
-        guard let bits = reader.mapVarint[self.fieldNumber] else { return }
+        /*
+         Because of COW, Dictionary may make a copy of itself before remove any Element.
+         That's why the complexity of removeValue(forKey:) is O(n).
+         So, keep Dictionary only have 1 reference to keep away from COW.
+         */
+        guard let bits = reader.mapVarint.removeValue(forKey: self.fieldNumber) else { return }
         self.rawValue = _Integer.bit(bits, at: 0)
     }
 }

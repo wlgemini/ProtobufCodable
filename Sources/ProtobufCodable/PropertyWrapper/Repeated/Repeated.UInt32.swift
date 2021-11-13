@@ -26,7 +26,8 @@ extension Repeated {
 extension Repeated.UInt32: _DecodingKey {
     
     func decode(from reader: _ByteBufferReader) throws {
-//        guard let bits = reader.mapVarint[self.fieldNumber] else { return }
-//        self.rawValue = Swift.UInt32.init(truncatingIfNeeded: bits)
+        guard let range = reader.mapLengthDelimited.removeValue(forKey: self.fieldNumber)?.first else { return }
+        let bit32s = try _ByteBufferReader.readVarints(valueType: Swift.UInt32.self, range: range, data: reader.data)
+        self.rawValue = bit32s.map { Swift.UInt32(truncatingIfNeeded: $0) }
     }
 }

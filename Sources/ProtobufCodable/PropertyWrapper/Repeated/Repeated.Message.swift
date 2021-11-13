@@ -25,8 +25,13 @@ extension Repeated {
 extension Repeated.Message: _DecodingKey {
     
     func decode(from reader: _ByteBufferReader) throws {
-//        guard let range = reader.mapLengthDelimited[self.fieldNumber]?.first else { return }
-//        let rangeReader = try _ByteBufferReader(from: reader.data, in: range)
-//        self.rawValue = try T._decode(from: rangeReader)
+        guard let ranges = reader.mapLengthDelimited.removeValue(forKey: self.fieldNumber) else { return }
+        var models: [T] = []
+        for range in ranges {
+            let rangeReader = try _ByteBufferReader(from: reader.data, in: range)
+            let model = try T._decode(from: rangeReader)
+            models.append(model)
+        }
+        self.rawValue = models
     }
 }

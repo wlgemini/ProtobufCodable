@@ -25,7 +25,12 @@ extension Repeated {
 extension Repeated.Bool: _DecodingKey {
     
     func decode(from reader: _ByteBufferReader) throws {
-        guard let range = reader.mapLengthDelimited[self.fieldNumber]?.first else { return }
+        /*
+         Because of COW, Dictionary may make a copy of itself before remove any Element.
+         That's why the complexity of removeValue(forKey:) is O(n).
+         So, keep Dictionary only have 1 reference to keep away from COW.
+         */
+        guard let range = reader.mapLengthDelimited.removeValue(forKey: self.fieldNumber)?.first else { return }
         self.rawValue = range.map { _Integer.bit(reader.data[$0], at: 0) }
     }
 }

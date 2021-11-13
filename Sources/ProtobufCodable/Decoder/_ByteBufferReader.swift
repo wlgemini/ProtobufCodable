@@ -1,6 +1,11 @@
 import Foundation
 
 
+///
+/// Because of COW, Dictionary may make a copy of itself before remove any Element.
+/// That's why the complexity of removeValue(forKey:) is O(n).
+/// So, keep Dictionary only have 1 reference to keep away from COW.
+///
 final class _ByteBufferReader {
     
     // MARK: Private
@@ -148,7 +153,6 @@ extension _ByteBufferReader {
         let lowerBound: Swift.Int = fromIndex
         
         var index = fromIndex
-        var isTruncating: Swift.Bool = false
         var value: V = 0b0000_0000
         var bitIndex: Swift.Int64 = 0
         let bitCount: Swift.Int64 = Swift.Int64(V.bitWidth)
@@ -184,6 +188,7 @@ extension _ByteBufferReader {
         // returns
         let upperBound = index
         let readRange = lowerBound ..< upperBound
+        let isTruncating = hasVarintFlagBit
         return (readRange, isTruncating, value)
     }
     

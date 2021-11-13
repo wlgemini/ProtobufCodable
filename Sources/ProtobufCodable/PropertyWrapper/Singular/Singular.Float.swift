@@ -25,7 +25,7 @@ extension Singular {
 extension Singular.Float: _DecodingKey {
     
     func decode(from reader: _ByteBufferReader) throws {
-        guard let bit32 = reader.mapBit32[self.fieldNumber] else { return }
+        guard let bit32 = reader.mapBit32.removeValue(forKey: self.fieldNumber) else { return }
         self.rawValue = Swift.Float(bitPattern: bit32)
     }
 }

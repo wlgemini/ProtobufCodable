@@ -26,7 +26,7 @@ extension Singular {
 extension Singular.SFixed32: _DecodingKey {
     
     func decode(from reader: _ByteBufferReader) throws {
-        guard let bit32 = reader.mapBit32[self.fieldNumber] else { return }
+        guard let bit32 = reader.mapBit32.removeValue(forKey: self.fieldNumber) else { return }
         self.rawValue = Swift.Int32(bitPattern: bit32)
     }
 }

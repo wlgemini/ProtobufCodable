@@ -25,7 +25,7 @@ extension Singular {
 extension Singular.Bytes: _DecodingKey {
     
     func decode(from reader: _ByteBufferReader) throws {
-        guard let range = reader.mapLengthDelimited[self.fieldNumber]?.first else { return }
+        guard let range = reader.mapLengthDelimited.removeValue(forKey: self.fieldNumber)?.first else { return }
         self.rawValue = reader.data[range]
     }
 }

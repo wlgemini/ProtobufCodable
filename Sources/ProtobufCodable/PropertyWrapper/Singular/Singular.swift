@@ -8,8 +8,8 @@
 /// - `int64`:  littleEndian.varint, bitPattern
 /// - `uint32`:  littleEndian.varint.bit32
 /// - `uint64`:  littleEndian.varint.bit64
-/// - `sint32`:  littleEndian.varint.bit32, zigzag, bitPattern
-/// - `sint64`:  littleEndian.varint.bit64, zigzag, bitPattern
+/// - `sint32`:  littleEndian.varint.bit32, zigzag
+/// - `sint64`:  littleEndian.varint.bit64, zigzag
 /// - `fixed32`: littleEndian.bit32
 /// - `fixed64`: littleEndian.bit64
 /// - `sfixed32`: littleEndian.bit32, bitPattern

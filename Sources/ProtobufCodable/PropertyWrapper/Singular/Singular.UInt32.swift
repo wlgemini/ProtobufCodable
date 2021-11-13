@@ -26,7 +26,7 @@ extension Singular {
 extension Singular.UInt32: _DecodingKey {
     
     func decode(from reader: _ByteBufferReader) throws {
-        guard let bit64 = reader.mapVarint[self.fieldNumber] else { return }
+        guard let bit64 = reader.mapVarint.removeValue(forKey: self.fieldNumber) else { return }
         self.rawValue = Swift.UInt32(truncatingIfNeeded: bit64)
     }
 }

@@ -28,7 +28,8 @@ extension Repeated {
 extension Repeated.SInt64: _DecodingKey {
     
     func decode(from reader: _ByteBufferReader) throws {
-//        guard let bits = reader.mapVarint[self.fieldNumber] else { return }
-//        self.rawValue = _Integer.zigZagDecode(bits)
+        guard let range = reader.mapLengthDelimited.removeValue(forKey: self.fieldNumber)?.first else { return }
+        let bit64s = try _ByteBufferReader.readVarints(valueType: Swift.UInt64.self, range: range, data: reader.data)
+        self.rawValue = bit64s.map { _Integer.zigZagDecoded($0) }
     }
 }

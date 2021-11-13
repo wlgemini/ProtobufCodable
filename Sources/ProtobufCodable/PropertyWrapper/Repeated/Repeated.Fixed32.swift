@@ -28,7 +28,7 @@ extension Repeated {
 extension Repeated.Fixed32: _DecodingKey {
     
     func decode(from reader: _ByteBufferReader) throws {
-        guard let range = reader.mapLengthDelimited[self.fieldNumber]?.first else { return }
+        guard let range = reader.mapLengthDelimited.removeValue(forKey: self.fieldNumber)?.first else { return }
         self.rawValue = try _ByteBufferReader.readFixedWidthIntegers(valueType: Swift.UInt32.self, range: range, data: reader.data)
     }
 }

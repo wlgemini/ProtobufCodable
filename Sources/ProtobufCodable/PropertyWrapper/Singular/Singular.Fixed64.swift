@@ -28,7 +28,7 @@ extension Singular {
 extension Singular.Fixed64: _DecodingKey {
     
     func decode(from reader: _ByteBufferReader) throws {
-        guard let bit64 = reader.mapBit64[self.fieldNumber] else { return }
+        guard let bit64 = reader.mapBit64.removeValue(forKey: self.fieldNumber) else { return }
         self.rawValue = bit64
     }
 }
